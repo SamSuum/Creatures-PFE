@@ -11,13 +11,15 @@ public class Interactor : MonoBehaviour
     [SerializeField] private Transform _interactionPoint;
     [SerializeField] private float _interactionPointRadius = 0.5f;
     [SerializeField] private LayerMask _interactableMask;
+    [SerializeField] private InteractionPromptUI _interactionPromptUI;
 
     private readonly Collider[] _colliders = new Collider[3];
     [SerializeField] private int _numFound;
 
     private bool _canMimick = false;
-    private IMimickable _mimickable;
 
+    private IMimickable _mimickable;
+    private IInteractable _interactable;
     private void Awake()
     {
         _input = GetComponent<PlayerInputs>();
@@ -32,12 +34,21 @@ public class Interactor : MonoBehaviour
         {
             //interactions
 
-            var interactable = _colliders[0].GetComponentInParent<IInteractable>();           
+            _interactable = _colliders[0].GetComponentInParent<IInteractable>();           
 
-            if (interactable != null && _input.interact)
+            if (_interactable != null)
             {
-                interactable.Interact(this);
-                _input.interact = false;
+                if(!_interactionPromptUI.isDisplayed)
+                {
+                    _interactionPromptUI.SetUp(_interactable.InteractionPrompt);
+                }
+
+                if(_input.interact)
+                {
+                    _interactable.Interact(this);
+                    _input.interact = false;
+                }
+                
             }
 
             //Shapeshifting interactions
@@ -47,14 +58,17 @@ public class Interactor : MonoBehaviour
             if (_mimickable != null)
             {
                 _canMimick = true;
-               
-
-            }
-            else _canMimick = false;
+            }            
 
         }
         else
         {
+            if (_interactable == null) _interactable = null;
+            if (_mimickable == null) _mimickable = null;
+
+            if (_interactionPromptUI.isDisplayed) _interactionPromptUI.Close();
+
+            _canMimick = false;
             _input.interact = false;
         }    
 
@@ -70,6 +84,8 @@ public class Interactor : MonoBehaviour
         return _mimickable;
     }
 
+
+    //debug
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
