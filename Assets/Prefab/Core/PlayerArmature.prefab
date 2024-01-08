@@ -2647,16 +2647,16 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6389668169360563793}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 13.627, y: 0.747, z: 9.308}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4809758097560907748}
   - {fileID: 6724915859089725664}
   - {fileID: 6772879282025179972}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &6853938615998500856
 Rigidbody:
@@ -2700,7 +2700,7 @@ MonoBehaviour:
   pushLayers:
     serializedVersion: 2
     m_Bits: 1
-  canPush: 1
+  canPush: 0
   strength: 0.5
 --- !u!114 &4555245805083284431
 MonoBehaviour:
@@ -2833,8 +2833,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58895129834c1ea4080273ddddd21e92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MoveSpeed: 5
-  SprintSpeed: 15
+  MoveSpeed: 15
+  SprintSpeed: 30
   RotationSmoothTime: 0.3
   SpeedChangeRate: 10
   JumpHeight: 0.01
@@ -2845,7 +2845,7 @@ MonoBehaviour:
   GroundedRadius: 0.28
   GroundLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 9
   CinemachineCameraTarget: {fileID: 7666345550649532951}
   TopClamp: 70
   BottomClamp: -30
@@ -2870,6 +2870,7 @@ MonoBehaviour:
   _interactableMask:
     serializedVersion: 2
     m_Bits: 8
+  _interactionPromptUI: {fileID: 0}
   _numFound: 0
 --- !u!114 &9034040517555173719
 MonoBehaviour:
@@ -2884,12 +2885,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _defaultShape: {fileID: 8747540899055018365}
-  _hasTransformed: 0
   _psy: 10000
   transformed: 0
   camTargetCoord: {x: 0, y: 0, z: 0}
   _poolSize: 1
   _poolMaxSize: 2
+  canMimick: 0
+  canReset: 0
 --- !u!1 &6550422763936416569
 GameObject:
   m_ObjectHideFlags: 0
@@ -3877,7 +3879,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8299638119033774696}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.456, z: 0.554}
+  m_LocalPosition: {x: 0, y: 1.1, z: 1.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4008,7 +4010,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2479260543197593899}
   - {fileID: 1733120251514126996}

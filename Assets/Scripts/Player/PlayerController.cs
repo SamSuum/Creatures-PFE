@@ -140,11 +140,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {          
-        animator = GetAnimator();
-        SetCamHeight();
+        animator = GetAnimator();        
         Jump();
-        GroundedCheck();
-       
+        GroundedCheck();       
     }
     private void FixedUpdate()
     {
@@ -154,6 +152,7 @@ public class PlayerController : MonoBehaviour
     private void LateUpdate()
     {
         CameraRotation();
+        SetCamHeight();
     }
     #endregion
 
