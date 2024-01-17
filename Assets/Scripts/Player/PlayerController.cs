@@ -140,11 +140,9 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {          
-        animator = GetAnimator();
-        SetCamHeight();
+        animator = GetAnimator();        
         Jump();
-        GroundedCheck();
-       
+        GroundedCheck();       
     }
     private void FixedUpdate()
     {
@@ -154,6 +152,7 @@ public class PlayerController : MonoBehaviour
     private void LateUpdate()
     {
         CameraRotation();
+        SetCamHeight();
     }
     #endregion
 
@@ -387,7 +386,7 @@ public class PlayerController : MonoBehaviour
         if(shapeShifter.transformed)
             CinemachineCameraTarget.transform.localPosition = shapeShifter.camTargetCoord;
         else
-            CinemachineCameraTarget.transform.localPosition = new Vector3(0,1.375f,0);
+            CinemachineCameraTarget.transform.localPosition = new Vector3(0,2.0f,0);
     }
 
     #endregion
