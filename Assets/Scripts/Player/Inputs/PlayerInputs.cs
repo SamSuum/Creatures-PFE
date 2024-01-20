@@ -14,8 +14,12 @@ public class PlayerInputs : MonoBehaviour
 	public bool sprint;
 	public bool interact;
 	public bool shapeshift;
+    public bool quickAttack;
+    public bool heavyAttack;
+    public bool block;
+    public bool equip;
 
-	[Header("Movement Settings")]
+    [Header("Movement Settings")]
 	public bool analogMovement;
 
 	[Header("Mouse Cursor Settings")]
@@ -53,10 +57,27 @@ public class PlayerInputs : MonoBehaviour
 	{
 		ShapeshiftInput(value.isPressed);
 	}
+
+    public void OnQuickAttack(InputValue value)
+    {
+        QuickAttackInput(value.isPressed);
+    }
+    public void OnHeavyAttack(InputValue value)
+    {
+        HeavyAttackInput(value.isPressed);
+    }
+    public void OnBlock(InputValue value)
+    {
+        BlockInput(value.isPressed);
+    }
+    public void OnEquip(InputValue value)
+    {
+        EquipInput(value.isPressed);
+    }
 #endif
 
 
-	public void MoveInput(Vector2 newMoveDirection)
+    public void MoveInput(Vector2 newMoveDirection)
 	{
 		move = newMoveDirection;
 	}
@@ -84,7 +105,26 @@ public class PlayerInputs : MonoBehaviour
     {
 		shapeshift = newShapeshiftState;
     }
-	private void OnApplicationFocus(bool hasFocus)
+
+    public void QuickAttackInput(bool newShapeshiftState)
+    {
+        quickAttack = newShapeshiftState;
+    }
+
+    public void HeavyAttackInput(bool newShapeshiftState)
+    {
+        heavyAttack = newShapeshiftState;
+    }
+
+    public void BlockInput(bool newShapeshiftState)
+    {
+        block = newShapeshiftState;
+    }
+    public void EquipInput(bool newShapeshiftState)
+    {
+        equip = newShapeshiftState;
+    }
+    private void OnApplicationFocus(bool hasFocus)
 	{
 		SetCursorState(cursorLocked);
 	}

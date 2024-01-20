@@ -1,6 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+/// <summary>
+/// modified starter assets
+/// Simple behaviour for characters footsteps. 
+/// </summary>
 
 public class SoundManager : MonoBehaviour
 {

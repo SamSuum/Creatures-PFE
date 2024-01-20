@@ -13,17 +13,17 @@ public class Shape : MonoBehaviour, IInteractable,IMimickable
 
     public Vector3 CamCoord => _camCoord;
 
-    public bool Interact(Interactor interactor)
+    public bool Interact(Player player)
     {
         Debug.Log("You can transform into this");
         return true;
     }
 
-    public  GameObject GetShape(ShapeShifter shapeShifter)
+    public  GameObject GetShape(Player player)
     {
         return _shape;
     }
-    public Vector3 GetCamCoord(ShapeShifter shapeShifter)
+    public Vector3 GetCamCoord(Player player)
     {
         return _camCoord;
     }
