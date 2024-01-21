@@ -462,7 +462,7 @@ Transform:
   - {fileID: 5776330728566143765}
   - {fileID: 2239368594345516872}
   m_Father: {fileID: 0}
-  m_RootOrder: -1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2970627899780678953
 GameObject:
@@ -672,6 +672,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 318117927508036271}
+  - component: {fileID: 1257074491429281293}
+  - component: {fileID: 4319209820438007144}
   m_Layer: 0
   m_Name: GFX
   m_TagString: Untagged
@@ -697,6 +699,41 @@ Transform:
   m_Father: {fileID: 2239368594345516872}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1257074491429281293
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4699285572884061805}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45e3b98d70863e9409ea7d916b668f0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dmg: 0
+  hit: 0
+--- !u!135 &4319209820438007144
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4699285572884061805}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 1.0395802
+  m_Center: {x: 0, y: 1.3562905, z: 0}
 --- !u!1 &4829155707297692545
 GameObject:
   m_ObjectHideFlags: 0

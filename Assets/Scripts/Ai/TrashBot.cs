@@ -13,7 +13,7 @@ namespace Ai
         AI_State currentState;
         public SleepState sleepState = new SleepState();
         public PatrolState patrolState = new PatrolState();
-        public GenericHP _botHealth = new GenericHP(30, 30);
+        public GenericHP _trashbotHealth = new GenericHP(30, 30);
 
         public AI_Data data;
 
@@ -40,7 +40,7 @@ namespace Ai
             }
 
             //Health and damage
-            if (_botHealth.Health == 0) Die();
+            if (_trashbotHealth.Health == 0) Die();
             if (_hitbox.hit)
             {
                 TakeDmg(_hitbox.dmg);
@@ -49,7 +49,7 @@ namespace Ai
 
         private void TakeDmg(int dmg)
         {
-            _botHealth.DmgUnit(dmg);
+            _trashbotHealth.DmgUnit(dmg);
         }
         private void Die()
         {

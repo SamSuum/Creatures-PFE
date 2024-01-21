@@ -136,6 +136,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5232716459666086023}
+  - component: {fileID: 7509215657151015418}
+  - component: {fileID: 1852229642142593355}
   m_Layer: 0
   m_Name: GFX
   m_TagString: Untagged
@@ -161,6 +163,41 @@ Transform:
   m_Father: {fileID: 8375884083991752273}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7509215657151015418
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2127360356933268333}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.02, y: 0.019999996, z: 0.021440266}
+  m_Center: {x: 0, y: 0.0000000018626451, z: -0.0007201348}
+--- !u!114 &1852229642142593355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2127360356933268333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45e3b98d70863e9409ea7d916b668f0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dmg: 30
+  hit: 0
 --- !u!1 &2583061090384935643
 GameObject:
   m_ObjectHideFlags: 0
@@ -400,7 +437,6 @@ GameObject:
   - component: {fileID: 855877842829783916}
   - component: {fileID: 7591480115181837335}
   - component: {fileID: 1060305282940522720}
-  - component: {fileID: 2789899753768618455}
   m_Layer: 0
   m_Name: hull and magnet
   m_TagString: Untagged
@@ -494,20 +530,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.02, y: 0.019999996, z: 0.021440266}
   m_Center: {x: 0, y: 0.0000000018626451, z: -0.0007201348}
---- !u!114 &2789899753768618455
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3599204671575164627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 45e3b98d70863e9409ea7d916b668f0d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dmg: 30
-  hit: 0
 --- !u!1 &3619430231077789648
 GameObject:
   m_ObjectHideFlags: 0

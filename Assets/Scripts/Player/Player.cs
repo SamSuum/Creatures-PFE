@@ -200,10 +200,10 @@ public class Player : MonoBehaviour
         if (GameManager.gameManager._playerHealth.Health == 0) Die();
         if (_hitbox.hit)
         { 
-            animator.SetBool("Hit", true);
+            if(_hasAnimator) animator.SetBool("Hit", true);
             PlayerTakeDmg(_hitbox.dmg);
         }
-        else animator.SetBool("Hit", false);
+        else if (_hasAnimator) animator.SetBool("Hit", false);
 
         //Combat
         timeSinceAttack += Time.deltaTime;
@@ -212,7 +212,8 @@ public class Player : MonoBehaviour
         QuickAttack();
         Equip();
         Block();
-       
+
+        
 
         //Interaction
         _numFound = Physics.OverlapSphereNonAlloc(_interactionPoint.position, _interactionPointRadius, _colliders, _interactableMask);
@@ -584,59 +585,77 @@ public class Player : MonoBehaviour
         if (_input.block)
         {
             Debug.Log("Blocking");
-            animator.SetBool("Block", true);
+            if (_hasAnimator) animator.SetBool("Block", true);
+            isBlocking = true;
             _weaponR.tag = "Untagged";
             _weaponL.tag = "Untagged";
-            isBlocking = true;            
         }
         else
         {
-            animator.SetBool("Block", false);
+            if (_hasAnimator) animator.SetBool("Block", false);
             isBlocking = false;
         }
     }
 
     private void HeavyAttack()
     {
-        if (_input.heavyAttack)
+        if (_input.heavyAttack && timeSinceAttack > .8f)
         {
+           
             Debug.Log("Strong Attack");
-            _weaponR.tag = "Dmg";
-            _weaponL.tag = "Dmg";
-            animator.SetBool("Attack1", true);
+
+            if (_hasAnimator) animator.SetBool("Attack1", true);
+
             isKicking = true;
             _input.heavyAttack = false;
+            _weaponR.tag = "Dmg";
+            _weaponL.tag = "Dmg";
+            //Reset Timer
+            timeSinceAttack = 0;
         }
         else
         {
-            animator.SetBool("Attack1", false);
+            if (_hasAnimator) animator.SetBool("Attack1", false);
             isKicking = false;
-          
+            if (timeSinceAttack > .8f)
+            {
+                _weaponR.tag = "Untagged";
+                _weaponL.tag = "Untagged";
+            }
+
         }
     }
 
     private void QuickAttack()
     {
 
-        if (_input.quickAttack && timeSinceAttack > 0.8f)
+        if (_input.quickAttack && timeSinceAttack > .8f)
         {
 
             currentAttack++;
             isAttacking = true;
             _input.quickAttack = false;
+            _weaponR.tag = "Dmg";
+            _weaponL.tag = "Dmg";
 
             Debug.Log("Quick Attack");
 
-            _weaponR.tag = "Dmg";
-            _weaponL.tag = "Dmg";
-            animator.SetBool("Attack2", true);
+
+            if (_hasAnimator) animator.SetBool("Attack2", true);
                     
             //Reset Timer
             timeSinceAttack = 0;
         }
         else
         {
-            animator.SetBool("Attack2", false);
+            if (_hasAnimator) animator.SetBool("Attack2", false);
+            isAttacking = false;
+            if(timeSinceAttack > .8f)
+            {
+                _weaponR.tag = "Untagged";
+                _weaponL.tag = "Untagged";
+            }
+            
         }
     }
 
@@ -657,7 +676,7 @@ public class Player : MonoBehaviour
 
     private void Die()
     {
-        animator.SetTrigger(_animIDDeath);
+        if (_hasAnimator) animator.SetTrigger(_animIDDeath);
         _mainCamera.GetComponent<CinemachineBrain>().enabled = false;
         Destroy(this);
     }
