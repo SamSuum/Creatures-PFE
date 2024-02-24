@@ -9,8 +9,10 @@ public interface IMimickable
 {
     public GameObject ObjectShape { get; }
     public Vector3 CamCoord { get; }
+    public Animator anim { get; }
     public GameObject GetShape(Player player);
     public Vector3 GetCamCoord(Player player);
+    public Animator GetNewAnimator(Player player);
 
 }
 

@@ -9,7 +9,7 @@ public class Door : MonoBehaviour,IInteractable
     [SerializeField] private bool _doorOpen = false;
     public string InteractionPrompt => _interactionPrompt;
 
-    public bool Interact(Player player)
+    public bool Interact(Actor player)
     {
         if(!_doorOpen)
         {

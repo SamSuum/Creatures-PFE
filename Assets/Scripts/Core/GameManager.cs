@@ -1,4 +1,5 @@
 using Ai;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,6 +14,8 @@ public class GameManager : MonoBehaviour
 
 
     public GenericHP _playerHealth = new GenericHP(100, 100);
+    public GenericPSY _playerPsy = new GenericPSY(100, 100);
+    public GenericStamina _playerStamina = new GenericStamina(100, 100);
 
     private void Awake()
     {

@@ -16,7 +16,7 @@ public class TriggerArea : MonoBehaviour
     {
         if (!other.CompareTag("Player"))
         {
-           // GameEvents.current.AlertTriggerExit();
+           GameEvents.current.AlertTriggerExit();
         }
     }
 }

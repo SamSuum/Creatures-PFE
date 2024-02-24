@@ -1,222 +1,206 @@
-﻿using Cinemachine;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEditorInternal;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using UnityEngine;
-#if ENABLE_INPUT_SYSTEM 
-using UnityEngine.InputSystem;
-using UnityEngine.Windows;
-#endif
+using static UnityEditor.Experimental.GraphView.GraphView;
 
-
-
-/// <summary>
-/// modified starter assets
-/// Controls the player character : movement, combatn ... anything depending on input.
-/// Notes : Needs optimizing; animation ID need to be in Shape script, a Finite state machine or a state pattern of some kind could be useful to implement all the actions (Exploration, Combat, Climbing, Swiming, etc...) 
-/// </summary>
-
-
-
-public class Player : MonoBehaviour
+public class Player : PlayerStateMachine
 {
-    #region Fields
-    [Header("Player")]
-    [Tooltip("Move speed of the character in m/s")]
-    public float MoveSpeed = 2.0f;
+    [HideInInspector]
+    public OffCombat idleState;
+    [HideInInspector]
+    public InCombat combatState;
+    [HideInInspector]
+    public InAir inAirState;
+    #region fields
+    public PlayerInputs input;
 
-    [Tooltip("Sprint speed of the character in m/s")]
-    public float SprintSpeed = 5.335f;
+    [Header("Animation Blend")]
+    public float animationBlend;
+    public float targetSpeed;
+    [HideInInspector]
+    public float Inputmagnitude;
+    public float motionSpeed;
 
-    [Tooltip("How fast the character turns to face movement direction")]
-    [Range(0.0f, 0.3f)]
-    public float RotationSmoothTime = 0.12f;
-
-    [Tooltip("Acceleration and deceleration")]
-    public float SpeedChangeRate = 10.0f;
-
-   
-
-    [Space(10)]
-    [Tooltip("The height the player can jump")]
-    public float JumpHeight = 1.2f;
-
-    [Space(10)]
-    [Tooltip("Time required to pass before being able to jump again. Set to 0f to instantly jump again")]
-    public float JumpTimeout = 0.50f;
-
-    [Tooltip("Time required to pass before entering the fall state. Useful for walking down stairs")]
-    public float FallTimeout = 0.15f;
-
-    [Header("Player Grounded")]
-    [Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
-    public bool Grounded = true;
-
-    [Tooltip("Useful for rough ground")]
-    public float GroundedOffset = -0.14f;
-
-    [Tooltip("The radius of the grounded check. Should match the radius of the CharacterController")]
-    public float GroundedRadius = 0.28f;
-
-    [Tooltip("What layers the character uses as ground")]
+    [Header("GroundCheck")]
+    public float GroundedRadius = .28f;
     public LayerMask GroundLayers;
+    public float GroundedOffset = -.14f;
 
-    [Header("Cinemachine")]
-    [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
+    [Header("Speed")]
+    public float SprintSpeed = 60.0f;
+    public float MoveSpeed = 15.0f;
+    public float speed;
+    public float SpeedChangeRate = 10.0f;
+    public Vector3 direction;
+
+    [Header("Jump")]
+    public float jumpTimeoutDelta;
+    public float JumpTimeout = .50f;
+    public float fallTimeoutDelta;
+    public float FallTimeout = .15f;
+    public float verticalVelocity;
+    public float terminalVelocity;
+    public float JumpHeight = .02f;
+
+    [Header("Camera")]
+    public GameObject _mainCamera;
+    public float _targetRotation;
+    public float _rotationVelocity;
+    [Range(0.0f, 0.3f)]
+    public float RotationSmoothTime = .12f;
+    // cinemachine
+    public float _cinemachineTargetYaw;
+    public float _cinemachineTargetPitch;
+    public const float _threshold = 0.01f;
     public GameObject CinemachineCameraTarget;
-
-    [Tooltip("How far in degrees can you move the camera up")]
     public float TopClamp = 70.0f;
-
-    [Tooltip("How far in degrees can you move the camera down")]
     public float BottomClamp = -30.0f;
-
-    [Tooltip("Additional degress to override the camera. Useful for fine tuning camera position when locked")]
     public float CameraAngleOverride = 0.0f;
-
-    [Tooltip("For locking the camera position on all axis")]
     public bool LockCameraPosition = false;
-    [Tooltip("For adjusting camera sensitivity")]
-    [SerializeField] private float _sensitivity = 60.0f;
+    public float _sensitivity = 60.0f;
+
+
+    [Header("Interactor")]
+    public LayerMask _interactableMask;
+    public InteractionPromptUI _interactionPromptUI;
+    public int _numFound;
+    public Transform interactionPoint;
+    public float interactionPointRadius = 0.5f;
+    private readonly Collider[] _colliders = new Collider[3];
+    private IInteractable _interactable;
+
+    [Header("ComBat")]
+    public int currentAttack = 0;
+    public GameObject _weaponL;
+    public GameObject _weaponR;
+    public float timeSinceAttack;
 
     [Header("Shapeshifting")]
-    [SerializeField] private GameObject _defaultShape;   
-    [SerializeField] private int _psy = 100;    
+    [SerializeField] private GameObject _defaultShape;
+
     [SerializeField] private Queue<GameObject> _shapePool = new Queue<GameObject>();
     [SerializeField] private int _poolSize = 1;
     [SerializeField] private int _poolMaxSize = 2;
+
+    public bool hasMimicked = false;
     public bool canMimick = false;
     public bool canReset = false;
-    public bool transformed = false;
+
+    public IMimickable mimickable;
+
     public Vector3 camTargetCoord;
-    
-    private GameObject _targetShape;
-    private GameObject _shapeInstance;
-    
-
-    [Header("Combat")]
-    //Equip-Unequip parameters
-    public bool isEquipping;    
-    //Blocking Parameters
-    public bool isBlocking;
-    //Kick Parameters
-    public bool isKicking;
-    //Attack Parameters
-    public bool isAttacking;
-    public int currentAttack = 0;
-
-    [SerializeField] private GameObject _weaponL;
-    [SerializeField] private GameObject _weaponR;
-   
+    [SerializeField] private GameObject _targetShape;
+    [SerializeField] private GameObject _shapeInstance;
 
 
-    private float timeSinceAttack;
-
-    [Header("Interactor")]
-
-    [SerializeField] private Transform _interactionPoint;
-    [SerializeField] private float _interactionPointRadius = 0.5f;
-    [SerializeField] private LayerMask _interactableMask;
-    [SerializeField] private InteractionPromptUI _interactionPromptUI;
-
-    private readonly Collider[] _colliders = new Collider[3];
-    [SerializeField] private int _numFound;
-
-    private bool _canMimick = false;
-
-    private IMimickable _mimickable;
-    private IInteractable _interactable;
-
-    // cinemachine
-    private float _cinemachineTargetYaw;
-    private float _cinemachineTargetPitch;
-
-    // player
-    private float _speed;
-    private float _animationBlend;
-    private float _targetRotation = 0.0f;
-    private float _rotationVelocity;
-    private float _verticalVelocity;
-   
-
-    // timeout deltatime
-    private float _jumpTimeoutDelta;
-    private float _fallTimeoutDelta;
-
-    // animation IDs
-    private int _animIDSpeed;
-    private int _animIDGrounded;
-    private int _animIDJump;
-    private int _animIDFreeFall;
-    private int _animIDMotionSpeed;
-    private int _animIDDeath;
-
-    [HideInInspector]
-    public Animator animator;
-    private Rigidbody _rb;
-    private PlayerInputs _input;
-    private GameObject _mainCamera;
-    private Hitbox _hitbox;
-
-    private const float _threshold = 0.01f;   
-    private bool _hasAnimator;
-
-    #endregion
-
-    #region properties
+    [Header("Stairs handling")]
+    public GameObject StepRayUpper;
+    public GameObject StepRayLower;
+    public float stepHeight = .3f;
+    public float stepSmooth = .1f;
 
 
     #endregion
-
-    #region runTime
     private void Awake()
-    {           
-        if (_mainCamera == null)
-        {
-            _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-        }
-        animator = GetAnimator();
-        _rb = GetComponent<Rigidbody>();
-        _input = GetComponent<PlayerInputs>();     
-        _input = GetComponent<PlayerInputs>();
-        _hitbox = GetComponentInChildren<Hitbox>();
+    {
+        idleState = new OffCombat(this);
+        combatState = new InCombat(this);        
+        inAirState = new InAir(this);
+
+        Init();
+
+        if (_mainCamera == null) _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+
+        StepRayUpper.transform.position += new Vector3(0, stepHeight, 0);
     }
 
-    private void Start()
+    public override void OnStart()
     {
+        HP = GameManager.gameManager._playerHealth;
+
+        GameEvents.current.onHitTriggerEnter += OnHitTaken;
+
+        GameEvents.current.onHitTriggerExit += OnHitRecover;
+
+        stamina = GameManager.gameManager._playerStamina;
+
         _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-        AssignAnimationIDs();
 
-        // reset our timeouts on start
-        _jumpTimeoutDelta = JumpTimeout;
-        _fallTimeoutDelta = FallTimeout;
-
-        _targetShape = null;
-
+       
+    }
+    public override void OnFixedUpdate()
+    {
+        HandleMovement();
+        GroundedCheck();
+    }
+    public override void OnUpdate()
+    {      
+        HandleInteractions();
+        HandleShapeShift();
+        if (HasAnimator()) UpdateAnimator(animationBlend, Inputmagnitude);
     }
 
-    private void Update()
+    private void LateUpdate()
     {
-        //Health and damage
-        if (GameManager.gameManager._playerHealth.Health == 0) Die();
-        if (_hitbox.hit)
-        { 
-            if(_hasAnimator) animator.SetBool("Hit", true);
-            PlayerTakeDmg(_hitbox.dmg);
+        CameraRotation();
+    }
+
+    protected override PlayerBaseState GetInitState()
+    {
+        return idleState;
+    }
+
+    private void OnDestroy()
+    {
+        GameEvents.current.onHitTriggerEnter -= OnHitTaken;
+        GameEvents.current.onHitTriggerExit -= OnHitRecover;
+    }
+
+    #region Handle Physics
+    private void GroundedCheck()
+    {
+        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
+        grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
+    }
+    public void HandleMovement()
+    {
+        rb.MovePosition(rb.position + direction.normalized * speed * Time.deltaTime);
+    }
+    #endregion
+
+    #region Handle Camera
+    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+    {
+        if (lfAngle < -360f) lfAngle += 360f;
+        if (lfAngle > 360f) lfAngle -= 360f;
+        return Mathf.Clamp(lfAngle, lfMin, lfMax);
+    }
+    private void CameraRotation()
+    {
+        // if there is an input and camera position is not fixed
+        if (input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
+        {
+            _cinemachineTargetYaw += input.look.x * _sensitivity * Time.deltaTime;
+            _cinemachineTargetPitch += input.look.y * _sensitivity * Time.deltaTime;
         }
-        else if (_hasAnimator) animator.SetBool("Hit", false);
 
-        //Combat
-        timeSinceAttack += Time.deltaTime;
+        // clamp our rotations so our values are limited 360 degrees
+        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
+        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
-        HeavyAttack();
-        QuickAttack();
-        Equip();
-        Block();
+        // Cinemachine will follow this target
+        CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
+    }
+    #endregion
 
-        
-
+    private void HandleInteractions()
+    {
         //Interaction
-        _numFound = Physics.OverlapSphereNonAlloc(_interactionPoint.position, _interactionPointRadius, _colliders, _interactableMask);
+        _numFound = Physics.OverlapSphereNonAlloc(interactionPoint.position, interactionPointRadius, _colliders, _interactableMask);
 
         if (_numFound > 0)
         {
@@ -231,267 +215,70 @@ public class Player : MonoBehaviour
                     _interactionPromptUI.SetUp(_interactable.InteractionPrompt);
                 }
 
-                if (_input.interact)
+                if (input.interact)
                 {
                     _interactable.Interact(this);
-                    _input.interact = false;
+                    input.interact = false;
                 }
-
             }
+            mimickable = _colliders[0].GetComponentInParent<IMimickable>();
 
-            //Shapeshifting interactions
-
-            _mimickable = _colliders[0].GetComponentInParent<IMimickable>();
-
-            if (_mimickable != null)
+            if (mimickable != null)
             {
-                _canMimick = true;
+                canMimick = true;
             }
+            else canMimick = false;
 
         }
         else
         {
             if (_interactable == null) _interactable = null;
-            if (_mimickable == null) _mimickable = null;
-
             if (_interactionPromptUI.isDisplayed) _interactionPromptUI.Close();
-
-            _canMimick = false;
-            _input.interact = false;
+            input.interact = false;
         }
+    }
 
-        canMimick = ((CanMimick() || _shapePool.Count > 0) && _psy > 0) ? true : false;
-        canReset = (transformed && !CanMimick()) ? true : false;
+    private void HandleShapeShift()
+    {
+        canMimick = ( canMimick && GameManager.gameManager._playerPsy.Psy > 0 ) ? true : false;
 
-        if (_input.shapeshift)
+        canReset = (hasMimicked && canMimick) ? true : false;
+
+        if (input.shapeshift)
         {
             if (canMimick)
             {
-                ShapeShift();
-                animator = GetAnimator();
-                SetCamHeight();
-            }
-            if (canReset) 
-            { 
-                ResetShape();
-                animator = GetAnimator();
-                SetCamHeight();
-            }
-
-            _input.shapeshift = false;
-        }
-
-        if (transformed)
-        {
-            if (_psy > 0) _psy--;
-            else ResetShape();
-        }
-    }
-
-    private void FixedUpdate()
-    {
-        Move();
-        Jump();
-        GroundedCheck();
-    }
-
-    private void LateUpdate()
-    {
-        CameraRotation();
-       
-    }
-
-   
-    #endregion
-
-    #region Movement  
-    private void GroundedCheck()
-    {
-        // set sphere position, with offset
-        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset,transform.position.z);
-
-        Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,QueryTriggerInteraction.Ignore);
-
-        // update animator if using character
-        if (_hasAnimator)
-        {
-            animator.SetBool(_animIDGrounded, Grounded);
-        }
-    }  
-    private void Move()
-    {
-
-        UpdateVelocity();
-        // move the player
-        _rb.MovePosition(_rb.position+ UpdatedRotation().normalized * (_speed * Time.deltaTime));
-
-        
-    }
-
-    private void UpdateVelocity()
-    {
-        float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
-
-
-        if (_input.move == Vector2.zero) targetSpeed = 0.0f;
-
-
-        float currentHorizontalSpeed = new Vector3(_rb.velocity.x, 0.0f, _rb.velocity.z).magnitude;
-
-        float speedOffset = 0.1f;
-        float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
-
-
-        if (currentHorizontalSpeed < targetSpeed - speedOffset ||
-            currentHorizontalSpeed > targetSpeed + speedOffset)
-        {
-
-            _speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude,
-                Time.deltaTime * SpeedChangeRate);
-
-            // round speed to 3 decimal places
-            _speed = Mathf.Round(_speed * 1000f) / 1000f;
-        }
-        else
-        {
-            _speed = targetSpeed;
-        }
-
-        UpdateAnimator(targetSpeed, inputMagnitude);
-    }
-    private Vector3 UpdatedRotation()
-    {
-        Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
-
-
-        if (_input.move != Vector2.zero)
-        {
-            _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + _mainCamera.transform.eulerAngles.y;
-
-            float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity, RotationSmoothTime);
-
-
-            transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
-        }
-
-        Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
-
-        return targetDirection;
-    }
-    
-    private void Jump()
-    {
-        if (Grounded)
-        {
-            // reset the fall timeout timer
-            _fallTimeoutDelta = FallTimeout;
-
-            // update animator if using character
-            if (_hasAnimator)
-            {
-                animator.SetBool(_animIDJump, false);
-                animator.SetBool(_animIDFreeFall, false);
-            }
-
-            // stop our velocity dropping infinitely when grounded
-            if (_verticalVelocity < 0.0f)
-            {
-                _verticalVelocity = -2f;
-            }
-
-            // Jump
-            if (_input.jump && _jumpTimeoutDelta <= 0.0f)
-            {
-                // the square root of H * -2 * G = how much velocity needed to reach desired height
-                _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Physics.gravity.y);
-                _rb.AddForce(Vector3.up * _verticalVelocity, ForceMode.VelocityChange);
-
-                // update animator if using character
-                if (_hasAnimator)
+                Mimick();
+                if (_shapeInstance != null)
                 {
-                    animator.SetBool(_animIDJump, true);
+                    ShapeShift();
                 }
             }
-
-            // jump timeout
-            if (_jumpTimeoutDelta >= 0.0f)
+            if (canReset)
             {
-                _jumpTimeoutDelta -= Time.deltaTime;
+                ResetShape(); 
             }
-
-            
+            input.shapeshift = false;
         }
-        else
+
+        if (hasMimicked)
         {
-            // reset the jump timeout timer
-            _jumpTimeoutDelta = JumpTimeout;
+            if (GameManager.gameManager._playerPsy.Psy <= 0) ResetShape();
 
-            // fall timeout
-            if (_fallTimeoutDelta >= 0.0f)
-            {
-                _fallTimeoutDelta -= Time.deltaTime;
-            }
-            else
-            {
-                // update animator if using character
-                if (_hasAnimator)
-                {
-                    animator.SetBool(_animIDFreeFall, true);
-                }
-            }
-
-            // if we are not grounded, do not jump
-            _input.jump = false;
+            GameManager.gameManager._playerPsy.DecreaseUnit(1);
+            psyBar.SetPsy(GameManager.gameManager._playerPsy.Psy);
         }
-        
     }
-    #endregion
 
-    #region Camera
-    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
-        {
-            if (lfAngle < -360f) lfAngle += 360f;
-            if (lfAngle > 360f) lfAngle -= 360f;
-            return Mathf.Clamp(lfAngle, lfMin, lfMax);
-        }
-    private void CameraRotation()
+    #region ShapeShifting
+
+    private void Mimick()
     {
-        // if there is an input and camera position is not fixed
-        if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
-        {
-            _cinemachineTargetYaw += _input.look.x *_sensitivity* Time.deltaTime;
-            _cinemachineTargetPitch += _input.look.y *_sensitivity* Time.deltaTime;
-        }
-
-        // clamp our rotations so our values are limited 360 degrees
-        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
-        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
-
-        // Cinemachine will follow this target
-        CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
-            _cinemachineTargetYaw, 0.0f);
-    }
-    private void SetCamHeight()
-    {
-        if (transformed)
-            CinemachineCameraTarget.transform.localPosition = camTargetCoord;
-        else
-            CinemachineCameraTarget.transform.localPosition = new Vector3(0, 2.0f, 0);
-    }
-    #endregion
-
-    #region Shapeshifting system
-    private void ShapeShift()
-    {
-        _targetShape = GetMimickable().GetShape(this);
-        camTargetCoord = GetMimickable().GetCamCoord(this);
-        this.tag = "Bot";
+        _targetShape = mimickable.GetShape(this);
+        camTargetCoord = mimickable.GetCamCoord(this);
         ClearPrev(_shapeInstance);
         InitializePool();
-        ChangeShape();
-       
     }
-
     private void InitializePool()
     {
         for (int i = 0; i < _poolSize; i++)
@@ -502,7 +289,6 @@ public class Player : MonoBehaviour
             _shapeInstance.SetActive(false);
         }
     }
-
     private void ClearPrev(GameObject previous)
     {
         if (previous != null)
@@ -510,37 +296,34 @@ public class Player : MonoBehaviour
             Destroy(previous.gameObject);
         }
     }
+    
 
+    private void ShapeShift()
+    {
+        this.tag = "Bot";
+        ChangeShape();
+        SetCamHeight();
+        GetAnimator();
+    }
+    private void SetCamHeight()
+    {
+        if (hasMimicked)
+            CinemachineCameraTarget.transform.localPosition = camTargetCoord;
+        else
+            CinemachineCameraTarget.transform.localPosition = new Vector3(0, 2.0f, 0);
+    }
     private void ChangeShape()
     {
         if (_shapeInstance != null)
         {
             _defaultShape.SetActive(false);
 
-            transformed = true;
+            hasMimicked = true;
 
             SetShape(_shapeInstance);
         }
         else Debug.Log("no object in memory");
     }
-
-    private void ResetShape()
-    {
-        _defaultShape.SetActive(true);
-        _defaultShape.tag = "Player";
-        transformed = false;
-       
-        ReturnToPool(_shapeInstance);
-        Destroy(_shapeInstance.gameObject);
-       
-    }
-
-    private void ReturnToPool(GameObject shapeInstance)
-    {
-        _shapePool.Enqueue(shapeInstance);
-        shapeInstance.SetActive(false);
-    }
-
     private void SetShape(GameObject shapeInstance)
     {
         if (_shapePool.Count < _poolMaxSize)
@@ -554,194 +337,27 @@ public class Player : MonoBehaviour
         }
     }
 
-    public bool CanMimick()
+   
+
+    private void ResetShape()
     {
-        return _canMimick;
+        _defaultShape.SetActive(true);
+        _defaultShape.tag = "Player";
+        hasMimicked = false;
+
+        SetCamHeight();
+        ReturnToPool(_shapeInstance);
+        Destroy(_shapeInstance.gameObject);
+        _shapeInstance = null;
+        GetAnimator();
+    }
+    private void ReturnToPool(GameObject shapeInstance)
+    {
+        _shapePool.Enqueue(shapeInstance);
+        shapeInstance.SetActive(false);
     }
 
-    public IMimickable GetMimickable()
-    {
-        return _mimickable;
-    }
-
-
-    //debug
-    
+   
     #endregion
-
-    #region Combat System
-    private void Equip()
-    {
-        if (_input.equip)
-        {
-            isEquipping = true;
-            _input.equip = false;
-            Debug.Log("Equipping");
-        }
-    }
-
-    private void Block()
-    {
-        if (_input.block)
-        {
-            Debug.Log("Blocking");
-            if (_hasAnimator) animator.SetBool("Block", true);
-            isBlocking = true;
-            _weaponR.tag = "Untagged";
-            _weaponL.tag = "Untagged";
-        }
-        else
-        {
-            if (_hasAnimator) animator.SetBool("Block", false);
-            isBlocking = false;
-        }
-    }
-
-    private void HeavyAttack()
-    {
-        if (_input.heavyAttack && timeSinceAttack > .8f)
-        {
-           
-            Debug.Log("Strong Attack");
-
-            if (_hasAnimator) animator.SetBool("Attack1", true);
-
-            isKicking = true;
-            _input.heavyAttack = false;
-            _weaponR.tag = "Dmg";
-            _weaponL.tag = "Dmg";
-            //Reset Timer
-            timeSinceAttack = 0;
-        }
-        else
-        {
-            if (_hasAnimator) animator.SetBool("Attack1", false);
-            isKicking = false;
-            if (timeSinceAttack > .8f)
-            {
-                _weaponR.tag = "Untagged";
-                _weaponL.tag = "Untagged";
-            }
-
-        }
-    }
-
-    private void QuickAttack()
-    {
-
-        if (_input.quickAttack && timeSinceAttack > .8f)
-        {
-
-            currentAttack++;
-            isAttacking = true;
-            _input.quickAttack = false;
-            _weaponR.tag = "Dmg";
-            _weaponL.tag = "Dmg";
-
-            Debug.Log("Quick Attack");
-
-
-            if (_hasAnimator) animator.SetBool("Attack2", true);
-                    
-            //Reset Timer
-            timeSinceAttack = 0;
-        }
-        else
-        {
-            if (_hasAnimator) animator.SetBool("Attack2", false);
-            isAttacking = false;
-            if(timeSinceAttack > .8f)
-            {
-                _weaponR.tag = "Untagged";
-                _weaponL.tag = "Untagged";
-            }
-            
-        }
-    }
-
-
-    #endregion
-
-    #region Health & Damage System
-    private void PlayerTakeDmg(int dmg)
-    {
-        GameManager.gameManager._playerHealth.DmgUnit(dmg);
-    }
-    private void PlayerHeal(int healing)
-    {
-        GameManager.gameManager._playerHealth.HealUnit(healing);
-        Debug.Log(GameManager.gameManager._playerHealth.Health);
-
-    }
-
-    private void Die()
-    {
-        if (_hasAnimator) animator.SetTrigger(_animIDDeath);
-        _mainCamera.GetComponent<CinemachineBrain>().enabled = false;
-        Destroy(this);
-    }
-    #endregion
-
-    #region Animation
-    private void UpdateAnimator(float targetSpeed, float inputMagnitude)
-    {
-        _animationBlend = Mathf.Lerp(_animationBlend, targetSpeed, Time.deltaTime * SpeedChangeRate);
-        if (_animationBlend < 0.01f) _animationBlend = 0f;
-        // update animator 
-        if (_hasAnimator)
-        {
-            animator.SetFloat(_animIDSpeed, _animationBlend);
-            animator.SetFloat(_animIDMotionSpeed, inputMagnitude);
-        }
-    }
-    private void AssignAnimationIDs()
-    {
-        _animIDDeath = Animator.StringToHash("Dead");
-        _animIDSpeed = Animator.StringToHash("Speed");
-        _animIDGrounded = Animator.StringToHash("Grounded");
-        _animIDJump = Animator.StringToHash("Jump");
-        _animIDFreeFall = Animator.StringToHash("FreeFall");
-        _animIDMotionSpeed = Animator.StringToHash("MotionSpeed");
-    }
-
-    public Animator GetAnimator()
-    {
-
-        foreach (Transform child in this.gameObject.transform)
-        {
-            if (child.CompareTag("Player") && child.gameObject.activeSelf)
-            {
-                _hasAnimator = true;
-                return child.GetComponent<Animator>();
-            }
-        }
-        _hasAnimator = false;
-        return null;
-
-    }
-    #endregion
-
-    #region Debug
-    private void OnDrawGizmosSelected()
-    {
-        Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
-        Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
-
-        if (Grounded) Gizmos.color = transparentGreen;
-        else Gizmos.color = transparentRed;
-
-        // when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
-        Gizmos.DrawSphere(
-            new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
-            GroundedRadius);
-    }
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(_interactionPoint.position, _interactionPointRadius);
-    }
-    #endregion
-
-    
-
 }
+

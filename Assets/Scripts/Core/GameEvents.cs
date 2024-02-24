@@ -5,7 +5,10 @@ using UnityEngine;
 
 public class GameEvents : MonoBehaviour
 {
-    public static GameEvents current;
+    public static GameEvents current
+    {
+        get; private set;
+    }
 
     private void Awake()
     {
@@ -32,4 +35,24 @@ public class GameEvents : MonoBehaviour
             onAlertTriggerExit();
         }
     }
+
+    public event Action<Actor,int,int> onHitTriggerEnter;
+    public void HitTriggerEnter(Actor actor, int id,int dmg)
+    {
+        if (onHitTriggerEnter != null)
+        {
+            onHitTriggerEnter(actor, id, dmg);
+        }
+    }
+    public event Action<Actor, int> onHitTriggerExit;
+    public void HitTriggerExit(Actor actor, int id)
+    {
+        if (onHitTriggerExit != null)
+        {
+            onHitTriggerExit(actor, id);
+        }
+    }
+
+
+
 }
