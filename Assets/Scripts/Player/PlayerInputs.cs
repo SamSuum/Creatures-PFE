@@ -2,9 +2,6 @@ using UnityEngine;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
-
-
-
 public class PlayerInputs : MonoBehaviour
 {
 	[Header("Character Input Values")]
@@ -18,12 +15,13 @@ public class PlayerInputs : MonoBehaviour
     public bool heavyAttack;
     public bool block;
     public bool equip;
+    public bool pause;
+    public bool menu;
 
     [Header("Movement Settings")]
 	public bool analogMovement;
 
 	[Header("Mouse Cursor Settings")]
-	public bool cursorLocked = true;
 	public bool cursorInputForLook = true;
 
 #if ENABLE_INPUT_SYSTEM
@@ -74,6 +72,15 @@ public class PlayerInputs : MonoBehaviour
     {
         EquipInput(value.isPressed);
     }
+
+    public void OnPause(InputValue value)
+    {
+        PauseInput(value.isPressed);
+    }
+    public void OnMenu(InputValue value)
+    {
+        MenuInput(value.isPressed);
+    }
 #endif
 
 
@@ -106,33 +113,45 @@ public class PlayerInputs : MonoBehaviour
 		shapeshift = newShapeshiftState;
     }
 
-    public void QuickAttackInput(bool newShapeshiftState)
+    public void QuickAttackInput(bool newAttackState)
     {
-        quickAttack = newShapeshiftState;
+        quickAttack = newAttackState;
     }
 
-    public void HeavyAttackInput(bool newShapeshiftState)
+    public void HeavyAttackInput(bool newAttackState)
     {
-        heavyAttack = newShapeshiftState;
+        heavyAttack = newAttackState;
     }
 
-    public void BlockInput(bool newShapeshiftState)
+    public void BlockInput(bool newBlockState)
     {
-        block = newShapeshiftState;
+        block = newBlockState;
     }
-    public void EquipInput(bool newShapeshiftState)
+    public void EquipInput(bool newEquipState)
     {
-        equip = newShapeshiftState;
+        equip = newEquipState;
     }
-    private void OnApplicationFocus(bool hasFocus)
-	{
-		SetCursorState(cursorLocked);
-	}
 
-	private void SetCursorState(bool newState)
-	{
-		Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
-	}
+    public void PauseInput(bool newPauseState)
+    {
+        pause = newPauseState;
+    }
+    public void MenuInput(bool newMenuState)
+    {
+        menu = newMenuState;
+    }
+
+
+    private void LateUpdate()
+    {
+		if (menu) menu = false;
+		if (pause) pause = false;
+		if (heavyAttack) heavyAttack = false;
+		if (quickAttack) quickAttack = false;
+		if (interact) interact = false;
+		if (shapeshift) shapeshift = false;
+		if (equip) equip = false;
+    }
 }
 
 	

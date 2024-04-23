@@ -1,363 +1,366 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using static UnityEditor.Experimental.GraphView.GraphView;
 
-public class Player : PlayerStateMachine
+namespace PLAYER
 {
-    [HideInInspector]
-    public OffCombat idleState;
-    [HideInInspector]
-    public InCombat combatState;
-    [HideInInspector]
-    public InAir inAirState;
-    #region fields
-    public PlayerInputs input;
+    public class Player : PlayerStateMachine
+    {        
+        internal PlayerBaseState idleState;
+        internal PlayerBaseState combatState;
+        internal PlayerBaseState JumpingState;
+        internal PlayerBaseState walkingState;
+        internal PlayerBaseState sprintingState;
+        internal PlayerBaseState fallingState;
+        internal PlayerBaseState tiredState;
 
-    [Header("Animation Blend")]
-    public float animationBlend;
-    public float targetSpeed;
-    [HideInInspector]
-    public float Inputmagnitude;
-    public float motionSpeed;
+        #region fields
+        public PlayerInputs input;
 
-    [Header("GroundCheck")]
-    public float GroundedRadius = .28f;
-    public LayerMask GroundLayers;
-    public float GroundedOffset = -.14f;
+        [Header("Animation Blend")]
+        public float animationBlend;
+        public float targetSpeed;
+        [HideInInspector]
+        public float Inputmagnitude;
+        public float motionSpeed;
 
-    [Header("Speed")]
-    public float SprintSpeed = 60.0f;
-    public float MoveSpeed = 15.0f;
-    public float speed;
-    public float SpeedChangeRate = 10.0f;
-    public Vector3 direction;
+        [Header("GroundCheck")]
+        public float GroundedRadius = .28f;
+        public LayerMask GroundLayers;
+        public float GroundedOffset = -.14f;
 
-    [Header("Jump")]
-    public float jumpTimeoutDelta;
-    public float JumpTimeout = .50f;
-    public float fallTimeoutDelta;
-    public float FallTimeout = .15f;
-    public float verticalVelocity;
-    public float terminalVelocity;
-    public float JumpHeight = .02f;
+        [Header("Speed")]
+        public float SprintSpeed = 60.0f;
+        public float MoveSpeed = 15.0f;
+        public float speed;
+        public float SpeedChangeRate = 10.0f;
+        public Vector3 direction;
 
-    [Header("Camera")]
-    public GameObject _mainCamera;
-    public float _targetRotation;
-    public float _rotationVelocity;
-    [Range(0.0f, 0.3f)]
-    public float RotationSmoothTime = .12f;
-    // cinemachine
-    public float _cinemachineTargetYaw;
-    public float _cinemachineTargetPitch;
-    public const float _threshold = 0.01f;
-    public GameObject CinemachineCameraTarget;
-    public float TopClamp = 70.0f;
-    public float BottomClamp = -30.0f;
-    public float CameraAngleOverride = 0.0f;
-    public bool LockCameraPosition = false;
-    public float _sensitivity = 60.0f;
+        [Header("Jump")]
+        public float jumpTimeoutDelta;
+        public float JumpTimeout = .50f;
+        public float fallTimeoutDelta;
+        public float FallTimeout = .15f;
+        public float verticalVelocity;
+        public float terminalVelocity;
+        public float JumpHeight = .02f;
 
+        [Header("Slope Movement")]
+        public float maxSlopeAngle;
+        public bool exitingSlope = false;
+        public float slopeSpeed = 10f;
 
-    [Header("Interactor")]
-    public LayerMask _interactableMask;
-    public InteractionPromptUI _interactionPromptUI;
-    public int _numFound;
-    public Transform interactionPoint;
-    public float interactionPointRadius = 0.5f;
-    private readonly Collider[] _colliders = new Collider[3];
-    private IInteractable _interactable;
-
-    [Header("ComBat")]
-    public int currentAttack = 0;
-    public GameObject _weaponL;
-    public GameObject _weaponR;
-    public float timeSinceAttack;
-
-    [Header("Shapeshifting")]
-    [SerializeField] private GameObject _defaultShape;
-
-    [SerializeField] private Queue<GameObject> _shapePool = new Queue<GameObject>();
-    [SerializeField] private int _poolSize = 1;
-    [SerializeField] private int _poolMaxSize = 2;
-
-    public bool hasMimicked = false;
-    public bool canMimick = false;
-    public bool canReset = false;
-
-    public IMimickable mimickable;
-
-    public Vector3 camTargetCoord;
-    [SerializeField] private GameObject _targetShape;
-    [SerializeField] private GameObject _shapeInstance;
+        [Header("Camera")]
+        public GameObject _mainCamera;
+        public float _targetRotation;
+        public float _rotationVelocity;
+        [Range(0.0f, 0.3f)]
+        public float RotationSmoothTime = .12f;
+        // cinemachine
+        public float _cinemachineTargetYaw;
+        public float _cinemachineTargetPitch;
+        public const float _threshold = 0.01f;
+        public GameObject CinemachineCameraTarget;
+        public float TopClamp = 70.0f;
+        public float BottomClamp = -30.0f;
+        public float CameraAngleOverride = 0.0f;
+        public bool LockCameraPosition = false;
+        public float _sensitivity = 60.0f;
 
 
-    [Header("Stairs handling")]
-    public GameObject StepRayUpper;
-    public GameObject StepRayLower;
-    public float stepHeight = .3f;
-    public float stepSmooth = .1f;
+        [Header("Interactor")]
+        public LayerMask _interactableMask;
+        public InteractionPromptUI _interactionPromptUI;
+        public int _numFound;
+        public Transform interactionPoint;
+        public float interactionPointRadius = 0.5f;
+        internal readonly Collider[] _colliders = new Collider[3];
+        internal IInteractable _interactable;
+        public bool Interactable;
+
+        [Header("ComBat")]
+        public int currentAttack = 0;
+        public GameObject _weaponL;
+        public GameObject _weaponR;
+        public float timeSinceAttack;
+
+        [Header("Shapeshifting")]
+        [SerializeField] private GameObject _defaultShape;
+        public InteractionPromptUI _mimicPromptUI;
+        [SerializeField] private Queue<GameObject> _shapePool = new Queue<GameObject>();
+        [SerializeField] private int _poolSize = 1;
+        [SerializeField] private int _poolMaxSize = 2;
+
+        public bool hasMimicked = false;
+        public bool canMimick = false;
+        public bool canReset = false;
+
+        public IMimickable mimickable;
+
+        public Vector3 camTargetCoord;
+        [SerializeField] private GameObject _targetShape;
+        [SerializeField] private GameObject _shapeInstance;
+        [SerializeField] private float _defCamHeight = 2.0f;
+        private bool canShapeShift;
 
 
-    #endregion
-    private void Awake()
-    {
-        idleState = new OffCombat(this);
-        combatState = new InCombat(this);        
-        inAirState = new InAir(this);
 
-        Init();
 
-        if (_mainCamera == null) _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
-
-        StepRayUpper.transform.position += new Vector3(0, stepHeight, 0);
-    }
-
-    public override void OnStart()
-    {
-        HP = GameManager.gameManager._playerHealth;
-
-        GameEvents.current.onHitTriggerEnter += OnHitTaken;
-
-        GameEvents.current.onHitTriggerExit += OnHitRecover;
-
-        stamina = GameManager.gameManager._playerStamina;
-
-        _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-
-       
-    }
-    public override void OnFixedUpdate()
-    {
-        HandleMovement();
-        GroundedCheck();
-    }
-    public override void OnUpdate()
-    {      
-        HandleInteractions();
-        HandleShapeShift();
-        if (HasAnimator()) UpdateAnimator(animationBlend, Inputmagnitude);
-    }
-
-    private void LateUpdate()
-    {
-        CameraRotation();
-    }
-
-    protected override PlayerBaseState GetInitState()
-    {
-        return idleState;
-    }
-
-    private void OnDestroy()
-    {
-        GameEvents.current.onHitTriggerEnter -= OnHitTaken;
-        GameEvents.current.onHitTriggerExit -= OnHitRecover;
-    }
-
-    #region Handle Physics
-    private void GroundedCheck()
-    {
-        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
-        grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
-    }
-    public void HandleMovement()
-    {
-        rb.MovePosition(rb.position + direction.normalized * speed * Time.deltaTime);
-    }
-    #endregion
-
-    #region Handle Camera
-    private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
-    {
-        if (lfAngle < -360f) lfAngle += 360f;
-        if (lfAngle > 360f) lfAngle -= 360f;
-        return Mathf.Clamp(lfAngle, lfMin, lfMax);
-    }
-    private void CameraRotation()
-    {
-        // if there is an input and camera position is not fixed
-        if (input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
+        #endregion
+        private void Awake()
         {
-            _cinemachineTargetYaw += input.look.x * _sensitivity * Time.deltaTime;
-            _cinemachineTargetPitch += input.look.y * _sensitivity * Time.deltaTime;
+            idleState = new Idle(this);
+            walkingState = new Walking(this);
+            sprintingState = new Sprinting(this);
+            combatState = new Combat(this);
+            JumpingState = new Jumping(this);
+            fallingState = new Falling(this);
+            tiredState = new Tired(this);
+
+            Init();
+
+            if (_mainCamera == null) _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
         }
 
-        // clamp our rotations so our values are limited 360 degrees
-        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
-        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
-
-        // Cinemachine will follow this target
-        CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
-    }
-    #endregion
-
-    private void HandleInteractions()
-    {
-        //Interaction
-        _numFound = Physics.OverlapSphereNonAlloc(interactionPoint.position, interactionPointRadius, _colliders, _interactableMask);
-
-        if (_numFound > 0)
+        public override void OnStart()
         {
-            //interactions
+            HP = GameManager.gameManager._playerHealth;
 
-            _interactable = _colliders[0].GetComponentInParent<IInteractable>();
+            GameEvents.current.onHitTriggerEnter += OnHitTaken;
 
-            if (_interactable != null)
+            GameEvents.current.onHitTriggerExit += OnHitRecover;
+
+            stamina = GameManager.gameManager._playerStamina;
+
+            _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
+
+        }
+        public override void OnFixedUpdate()
+        {
+            HandleMovement();
+            GroundedCheck();
+        }
+        public override void OnUpdate()
+        {
+            UpdateDamageCoolDown(this);
+
+            HandleShapeShift();
+
+            if (HasAnimator()) UpdateAnimator(animationBlend, Inputmagnitude);
+
+            if (dead) OnDeath(this);
+        }
+
+        private void LateUpdate()
+        {
+            CameraRotation();
+        }
+
+        protected override PlayerBaseState GetInitState()
+        {
+            return idleState;
+        }
+
+        private void OnDestroy()
+        {
+            GameEvents.current.onHitTriggerEnter -= OnHitTaken;
+            GameEvents.current.onHitTriggerExit -= OnHitRecover;
+        }
+        public void Heal(int amount)
+        {
+            HP.HealUnit(amount);
+            stamina.MaxStamina = HP.Health;
+            healthBar.SetHealth(HP.Health);
+        }
+        public void GainPsy(int amount)
+        {
+            GameManager.gameManager._playerPsy.RestoreUnit(amount);
+            psyBar.SetPsy(GameManager.gameManager._playerPsy.Psy);
+            Debug.Log(GameManager.gameManager._playerPsy.Psy);
+        }
+
+
+        #region Handle Physics
+        private void GroundedCheck()
+        {
+            Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
+            grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
+        }
+        public void HandleMovement()
+        {
+            Vector3 movement = direction * speed;
+
+            rb.velocity = new Vector3(movement.x, rb.velocity.y, movement.z);
+        }
+
+        #endregion
+
+        #region Handle Camera
+        private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+        {
+            if (lfAngle < -360f) lfAngle += 360f;
+            if (lfAngle > 360f) lfAngle -= 360f;
+            return Mathf.Clamp(lfAngle, lfMin, lfMax);
+        }
+        private void CameraRotation()
+        {
+            // if there is an input and camera position is not fixed
+            if (input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
             {
-                if (!_interactionPromptUI.isDisplayed)
-                {
-                    _interactionPromptUI.SetUp(_interactable.InteractionPrompt);
-                }
-
-                if (input.interact)
-                {
-                    _interactable.Interact(this);
-                    input.interact = false;
-                }
+                _cinemachineTargetYaw += input.look.x * _sensitivity * Time.deltaTime;
+                _cinemachineTargetPitch += input.look.y * _sensitivity * Time.deltaTime;
             }
-            mimickable = _colliders[0].GetComponentInParent<IMimickable>();
+
+            // clamp our rotations so our values are limited 360 degrees
+            _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
+            _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+
+            // Cinemachine will follow this target
+            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
+        }
+        #endregion
+
+        #region ShapeShifting
+        private void HandleShapeShift()
+        {            
 
             if (mimickable != null)
             {
+                if (!_mimicPromptUI.isDisplayed)
+                {
+                    _mimicPromptUI.SetUp(mimickable.MimicPrompt);
+                }
                 canMimick = true;
             }
-            else canMimick = false;
-
-        }
-        else
-        {
-            if (_interactable == null) _interactable = null;
-            if (_interactionPromptUI.isDisplayed) _interactionPromptUI.Close();
-            input.interact = false;
-        }
-    }
-
-    private void HandleShapeShift()
-    {
-        canMimick = ( canMimick && GameManager.gameManager._playerPsy.Psy > 0 ) ? true : false;
-
-        canReset = (hasMimicked && canMimick) ? true : false;
-
-        if (input.shapeshift)
-        {
-            if (canMimick)
+            else
             {
-                Mimick();
-                if (_shapeInstance != null)
+                if (_mimicPromptUI.isDisplayed) _mimicPromptUI.Close();
+                canMimick = false;
+                input.shapeshift = false;
+            }
+
+            canMimick = (canMimick && GameManager.gameManager._playerPsy.Psy > 0) ? true : false;
+
+            canReset = (hasMimicked && canShapeShift) ? true : false;
+            
+            canShapeShift = (!canMimick && GameManager.gameManager._playerPsy.Psy > 0) ? true : false;
+
+            if (input.shapeshift)
+            {
+                if (canMimick)
+                {
+                    Mimick();                            
+                }
+                if(canShapeShift)
                 {
                     ShapeShift();
                 }
+                if (canReset)
+                {
+                    ResetShape();
+                }
             }
-            if (canReset)
+
+            if (hasMimicked)
             {
-                ResetShape(); 
+                if (GameManager.gameManager._playerPsy.Psy <= 0) ResetShape();
+
+                GameManager.gameManager._playerPsy.DecreaseUnit(1);
+                psyBar.SetPsy(GameManager.gameManager._playerPsy.Psy);
             }
-            input.shapeshift = false;
         }
 
-        if (hasMimicked)
+        private void Mimick()
         {
-            if (GameManager.gameManager._playerPsy.Psy <= 0) ResetShape();
+            _targetShape = mimickable.GetShape(this);
+            camTargetCoord = mimickable.GetCamCoord(this);
 
-            GameManager.gameManager._playerPsy.DecreaseUnit(1);
-            psyBar.SetPsy(GameManager.gameManager._playerPsy.Psy);
+            ClearPrev(_shapeInstance);
+            InitializePool();
+
+            canMimick = false;
         }
-    }
-
-    #region ShapeShifting
-
-    private void Mimick()
-    {
-        _targetShape = mimickable.GetShape(this);
-        camTargetCoord = mimickable.GetCamCoord(this);
-        ClearPrev(_shapeInstance);
-        InitializePool();
-    }
-    private void InitializePool()
-    {
-        for (int i = 0; i < _poolSize; i++)
+        private void InitializePool()
         {
-            _shapeInstance = Instantiate(_targetShape, transform);
-            _shapeInstance.transform.position = transform.position;
-            _shapePool.Enqueue(_shapeInstance);
-            _shapeInstance.SetActive(false);
+            for (int i = 0; i < _poolSize; i++)
+            {
+                _shapeInstance = Instantiate(_targetShape, transform);
+                _shapeInstance.transform.position = transform.position;
+                _shapePool.Enqueue(_shapeInstance);
+                _shapeInstance.SetActive(false);
+            }
         }
-    }
-    private void ClearPrev(GameObject previous)
-    {
-        if (previous != null)
+        private void ClearPrev(GameObject previous)
         {
-            Destroy(previous.gameObject);
+            if (previous != null)
+            {
+                Destroy(previous.gameObject);
+            }
         }
-    }
-    
 
-    private void ShapeShift()
-    {
-        this.tag = "Bot";
-        ChangeShape();
-        SetCamHeight();
-        GetAnimator();
-    }
-    private void SetCamHeight()
-    {
-        if (hasMimicked)
-            CinemachineCameraTarget.transform.localPosition = camTargetCoord;
-        else
-            CinemachineCameraTarget.transform.localPosition = new Vector3(0, 2.0f, 0);
-    }
-    private void ChangeShape()
-    {
-        if (_shapeInstance != null)
+
+        private void ShapeShift()
         {
-            _defaultShape.SetActive(false);
-
-            hasMimicked = true;
-
-            SetShape(_shapeInstance);
+            this.tag = "Bot";
+            ChangeShape();
+            SetCamHeight();
+            GetAnimator();
         }
-        else Debug.Log("no object in memory");
-    }
-    private void SetShape(GameObject shapeInstance)
-    {
-        if (_shapePool.Count < _poolMaxSize)
+        private void SetCamHeight()
         {
-            shapeInstance = _shapePool.Dequeue();
-            shapeInstance.SetActive(true);
+            if (hasMimicked)
+                CinemachineCameraTarget.transform.localPosition = camTargetCoord;
+            else
+                CinemachineCameraTarget.transform.localPosition = new Vector3(0, _defCamHeight, 0);
         }
-        else
+        private void ChangeShape()
         {
-            shapeInstance.SetActive(true);
+            if (_shapeInstance != null)
+            {
+                _defaultShape.SetActive(false);
+
+                hasMimicked = true;
+
+                SetShape(_shapeInstance);
+            }
+            else Debug.Log("no object in memory");
         }
+        private void SetShape(GameObject shapeInstance)
+        {
+            if (_shapePool.Count < _poolMaxSize)
+            {
+                shapeInstance = _shapePool.Dequeue();
+                shapeInstance.SetActive(true);
+            }
+            else
+            {
+                shapeInstance.SetActive(true);
+            }
+        }
+
+
+        private void ResetShape()
+        {
+            _defaultShape.SetActive(true);
+            _defaultShape.tag = "Player";
+
+            hasMimicked = false;
+
+            SetCamHeight();
+
+            ReturnToPool(_shapeInstance);
+
+            GetAnimator();
+        }
+        private void ReturnToPool(GameObject shapeInstance)
+        {
+            _shapePool.Enqueue(shapeInstance);
+            shapeInstance.SetActive(false);
+        }
+
+
+        #endregion
     }
 
-   
-
-    private void ResetShape()
-    {
-        _defaultShape.SetActive(true);
-        _defaultShape.tag = "Player";
-        hasMimicked = false;
-
-        SetCamHeight();
-        ReturnToPool(_shapeInstance);
-        Destroy(_shapeInstance.gameObject);
-        _shapeInstance = null;
-        GetAnimator();
-    }
-    private void ReturnToPool(GameObject shapeInstance)
-    {
-        _shapePool.Enqueue(shapeInstance);
-        shapeInstance.SetActive(false);
-    }
-
-   
-    #endregion
 }
 

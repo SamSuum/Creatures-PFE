@@ -23,23 +23,15 @@ public class Hitbox : MonoBehaviour
         {
             GameEvents.current.HitTriggerEnter(actor, id, 100);
             GameEvents.current.HitTriggerExit(actor, id);
-            Debug.Log("hit");
         }
 
-        if (collision.collider.gameObject.CompareTag("Dmg"))
+        if (collision.collider.gameObject.CompareTag("Dmg") && collision.collider.gameObject.GetComponent<WeaponID>().id != id)
         {           
             GameEvents.current.HitTriggerEnter(actor,id, dmg);
-            Debug.Log("hit");
+            GameEvents.current.HitTriggerExit(actor, id);
         }
         
     }
-    private void OnCollisionExit(Collision collision)
-    {
-        if (collision.collider.gameObject.CompareTag("Dmg"))
-        {
-            GameEvents.current.HitTriggerExit(actor, id);
-        }
-
-    }
+    
 
 }

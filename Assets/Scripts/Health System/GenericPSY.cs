@@ -49,13 +49,10 @@ public class GenericPSY
     }
     public void RestoreUnit(int amount)
     {
-        if (_timer == _timeOut)
-        {            
+        if (_currentPsy> 0 && _currentPsy < _currentMaxPsy)
+        {
             _currentPsy += amount;
-            _timer = 0;
         }
-        else _timer ++;
-
         if (_currentPsy > _currentMaxPsy)
         { _currentPsy = _currentMaxPsy; }
     }

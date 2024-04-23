@@ -15,8 +15,8 @@ public class GameEvents : MonoBehaviour
         current = this;
     }
 
-    public event Action onAlertTriggerEnter;
-       
+    public event Action onAlertTriggerEnter;      
+    
     public void AlertTriggerEnter()
     {
         if(onAlertTriggerEnter!=null)
@@ -24,7 +24,6 @@ public class GameEvents : MonoBehaviour
             onAlertTriggerEnter();
         }
     }
-
 
     public event Action onAlertTriggerExit;
 
@@ -37,6 +36,7 @@ public class GameEvents : MonoBehaviour
     }
 
     public event Action<Actor,int,int> onHitTriggerEnter;
+
     public void HitTriggerEnter(Actor actor, int id,int dmg)
     {
         if (onHitTriggerEnter != null)
@@ -44,7 +44,9 @@ public class GameEvents : MonoBehaviour
             onHitTriggerEnter(actor, id, dmg);
         }
     }
+
     public event Action<Actor, int> onHitTriggerExit;
+
     public void HitTriggerExit(Actor actor, int id)
     {
         if (onHitTriggerExit != null)

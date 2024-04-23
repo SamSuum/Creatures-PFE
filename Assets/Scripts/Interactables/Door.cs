@@ -5,10 +5,9 @@ using UnityEngine;
 public class Door : MonoBehaviour,IInteractable
 {
     private string _interactionPrompt = "OPEN";
-    [SerializeField] private GameObject _door;
     [SerializeField] private bool _doorOpen = false;
     public string InteractionPrompt => _interactionPrompt;
-
+    [SerializeField] private Animator _anim;
     public bool Interact(Actor player)
     {
         if(!_doorOpen)
@@ -21,19 +20,17 @@ public class Door : MonoBehaviour,IInteractable
             Close();
             _interactionPrompt = "OPEN";
         }
+        _anim.SetBool("Open", _doorOpen);
         return true;
     }
 
     private void Open ()
     {
-        _door.SetActive(false);
-        _doorOpen = true;
-       
+        _doorOpen = true;       
     }
 
     private void Close()
     {
-        _door.SetActive(true);
         _doorOpen = false;
         
     }

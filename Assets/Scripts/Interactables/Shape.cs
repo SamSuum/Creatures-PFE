@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Shape : MonoBehaviour, IInteractable,IMimickable
+public class Shape : MonoBehaviour, IMimickable
 {
     [SerializeField] private string _prompt;
     [SerializeField] private GameObject _shape;
@@ -14,22 +14,18 @@ public class Shape : MonoBehaviour, IInteractable,IMimickable
     public Animator anim => _anim;
     public Vector3 CamCoord => _camCoord;
 
-    public bool Interact(Actor player)
-    {
-        Debug.Log("You can transform into this");
-        return true;
-    }
+    public string MimicPrompt => _prompt;
 
-    public  GameObject GetShape(Player player)
+    public  GameObject GetShape(Actor player)
     {
         return _shape;
     }
-    public Vector3 GetCamCoord(Player player)
+    public Vector3 GetCamCoord(Actor player)
     {
         return _camCoord;
     }
 
-    public Animator GetNewAnimator(Player player)
+    public Animator GetNewAnimator(Actor player)
     {
         return _anim;
     }

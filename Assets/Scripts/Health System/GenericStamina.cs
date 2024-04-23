@@ -36,11 +36,20 @@ public class GenericStamina
     //methods
     public void DecreaseUnit(int amount)
     {
-        if(_currentStamina > 0)
+        if(_currentStamina > 0 && _currentStamina-amount>0)
         {
             if (_timer == _timeOut)
             {
                 _currentStamina -= amount;
+                _timer = 0;
+            }
+            else _timer++;
+        }
+        else if (_currentStamina > 0 && _currentStamina - amount <= 0)
+        {
+            if (_timer == _timeOut)
+            {
+                _currentStamina =0 ;
                 _timer = 0;
             }
             else _timer++;

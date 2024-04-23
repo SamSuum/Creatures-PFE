@@ -3,15 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class Scene : MonoBehaviour
+public class Scene_Manager : MonoBehaviour
 {
-
-    // Update is called once per frame
-    void Update()
+    public void ExitToDesktop()
     {
-        if(Input.GetKey(KeyCode.Escape))
-        {
-            SceneManager.LoadScene(0);
-        }
+        Application.Quit();
+    }
+    public void ExitToMainMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void StartGame()
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(1);
     }
 }
