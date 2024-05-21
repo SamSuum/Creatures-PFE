@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using System;
 
 public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
@@ -30,7 +31,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 
         if(item!=null)
         {
-            _thisSlotImage.sprite = _heldItem.icon;
+            _thisSlotImage.sprite = _heldItem.Icon;
             _thisSlotImage.color = _opaque;
             UpdateData();
         }
@@ -45,7 +46,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         if(_heldItem != null)
         {
-            thisSlotQuantityText.text = _heldItem.currentQuantity.ToString();
+            thisSlotQuantityText.text =_heldItem.Amount.ToString();
         }
         else
         {
@@ -70,4 +71,6 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         hovered = false;
     }
+
+   
 }

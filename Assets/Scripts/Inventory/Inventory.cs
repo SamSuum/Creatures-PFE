@@ -1,3 +1,4 @@
+using PLAYER;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,76 +7,32 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class Inventory : MonoBehaviour
-{
-    [SerializeField] private GameObject _inventoryUI;
-    [SerializeField] PlayerInputs input;
+{    
+    [SerializeField] Player player;
 
     [Header("UI")]
-    [HideInInspector] public List<Slot> allInventorySlots = new List<Slot>();
-    public List<Slot> inventorySlots = new List<Slot>();
-
-    public Transform dropLocation;
+    public List<Slot> InventorySlots = new List<Slot>();
+    [HideInInspector]public List<Slot> allInventorySlots = new List<Slot>();
+    [SerializeField] internal GameObject _inventoryUI;
 
     [Header("Drag and drop")]
     public Image dragIconImage;
 
-    [SerializeField] private Item _currentDraggedItem;
+    [SerializeField] internal Item _currentDraggedItem;
 
-    [SerializeField] private int _currentDragSlotIndex = -1;
+    [SerializeField] internal int _currentDragSlotIndex = -1;
 
+    public Transform dropLocation;
 
-
-    private void Start()
-    {
-        allInventorySlots.AddRange(inventorySlots);
-
-        ToggleInventory(false);
-
-        foreach (Slot uiSlot in allInventorySlots)
-        {
-            if (uiSlot != null)
-            {
-                uiSlot.InitiliazeSlot();
-            }            
-        }
-
-
-    }
-    private void Update()
-    {
-        if (input.menu)
-        {
-            ToggleInventory(!_inventoryUI.activeSelf);
-        }
-
-        if (_inventoryUI.activeInHierarchy && Input.GetMouseButtonDown(0))
-        {
-            DragInventoryIcon();
-        }
-        else if(_currentDragSlotIndex != -1 && Input.GetMouseButtonUp(0)  || _currentDragSlotIndex!=-1 && !_inventoryUI.activeInHierarchy)
-        {
-            DropInventoryIcon();
-        }
-        if (Input.GetKeyDown(KeyCode.Q))
-            Dropitem();
-
-        dragIconImage.transform.position = Input.mousePosition;
-
-        if(Input.GetMouseButtonDown(1))
-        {
-            RequestUseItem();
-        }
-    }
-
-    public void ToggleInventory(bool enable)
+    public void ToggleInventory(bool enable, Inventory inv)
     {
         if (!enable)
         {
-            foreach (Slot curSlot in allInventorySlots)
+            foreach (Slot curSlot in inv.InventorySlots)
                 curSlot.hovered = false;
         }
 
-        _inventoryUI.SetActive(enable);
+        inv._inventoryUI.SetActive(enable);
 
         Cursor.visible = enable;
         Cursor.lockState = enable ? CursorLockMode.None : CursorLockMode.Locked;
@@ -83,76 +40,76 @@ public class Inventory : MonoBehaviour
         
     }
 
-    public void AddItemToInventory(Item item)
+
+    public  bool CanAddItem(Item item, int amount = 1)
     {
-        int leftoverQuantity = item.currentQuantity;
-        Slot openSlot = null;
+        int freeSpaces = 0;
 
-        for (int i = 0; i < allInventorySlots.Count; i++)
+        foreach (Slot itemSlot in InventorySlots)
         {
-            Item heldItem;
-
-            if (allInventorySlots[i] != null)
+            if (itemSlot.getItem() == null)
             {
-                heldItem = allInventorySlots[i].getItem();
+                return true;
             }
-
-            else
+            else if (itemSlot.getItem().ID == item.ID)
             {
-                heldItem = null;
-                Debug.Log("Inventory Slot null");
+                freeSpaces += item.MaximumStacks - itemSlot.getItem().Amount;
             }
+        }
+        return freeSpaces >= amount;
+    }
 
-            if (heldItem != null && item.name == heldItem.name)
+    public bool AddItem(Item item, Inventory inv)
+    {
+        for (int i = 0; i < inv.InventorySlots.Count; i++)
+        {
+            if (inv.CanAddItem(item))
             {
-                int freeSpaceInSLot = heldItem.maxQuantitity - heldItem.currentQuantity;
-                if (freeSpaceInSLot >= leftoverQuantity)
+                //stack items
+                if (inv.InventorySlots[i].getItem() != null && inv.InventorySlots[i].getItem().ID == item.ID)
                 {
-                    heldItem.currentQuantity += leftoverQuantity;
-                    Destroy(item.gameObject);
-                    allInventorySlots[i].UpdateData();
-                    return;
+                    inv.InventorySlots[i].getItem().Amount += item.Amount;
+                    inv.InventorySlots[i].UpdateData();
                 }
                 else
                 {
-                    heldItem.currentQuantity = heldItem.maxQuantitity;
-                    leftoverQuantity -= freeSpaceInSLot;
+                    inv.InventorySlots[i].SetItem(item);
                 }
+               
 
+                return true;
             }
-            else if (heldItem == null)
-            {
-                if (!openSlot)
-                    openSlot = allInventorySlots[i];
-            }
-
-            allInventorySlots[i].UpdateData();
         }
 
-        if (leftoverQuantity > 0 && openSlot)
-        {
-            openSlot.SetItem(item);
-            item.currentQuantity = leftoverQuantity;
-            item.gameObject.SetActive(false);
-        }
-        else
-        {
-            item.currentQuantity = leftoverQuantity;
-        }
+        return false;
     }
 
-    private void RequestUseItem()
+    public  bool RemoveItem(Item item, Inventory inv)
     {
-        for (int i = 0; i < allInventorySlots.Count; i++)
+        for (int i = 0; i < inv.InventorySlots.Count; i++)
         {
-            Slot curSlot = allInventorySlots[i];
+            if (inv.InventorySlots[i].getItem() == item)
+            {
+                inv.InventorySlots[i].getItem().Amount--;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    internal void RequestUseItem()
+    {
+        for (int i = 0; i < InventorySlots.Count; i++)
+        {
+            Slot curSlot = InventorySlots[i];
 
             if (curSlot.hovered && curSlot.hasItem())
             {
-                curSlot.getItem().UseItem();
+                UseItem(curSlot.getItem());
 
-                if(curSlot.getItem().currentQuantity !=0)
+                if(curSlot.getItem().Amount !=0)
                 {
+                    curSlot.getItem().Amount--;
                     curSlot.UpdateData();
                 }
                 else
@@ -164,25 +121,45 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    private void Dropitem()
+    internal void UseItem(Item item)
     {
-       for(int i= 0; i< allInventorySlots.Count;i++)
-        {
-            Slot curSlot = allInventorySlots[i];
+       switch(item.GetItemType())
+       {
+            case "Healing":
+                player.Heal(5);
+                break;
+            case "Psy":
+                player.GainPsy(5);
+                break;
+       }
+    }
 
-            if(curSlot.hovered && curSlot.hasItem())
+    internal void Dropitem()
+    {
+        for (int i = 0; i < InventorySlots.Count; i++)
+        {
+            Slot curSlot = InventorySlots[i];
+
+            if (curSlot.hovered && curSlot.hasItem())
             {
-                curSlot.getItem().gameObject.SetActive(true);
-                curSlot.getItem().transform.position = dropLocation.position;
-                curSlot.SetItem(null);
+                Instantiate(curSlot.getItem().prefab, dropLocation.position, dropLocation.rotation);
+                curSlot.getItem().Amount--;
+                curSlot.UpdateData();
+                if (curSlot.getItem().Amount == 0)
+                    curSlot.SetItem(null);
                 break;
             }
         }
     }
-
-    private void DragInventoryIcon()
+    internal void TransferItem(Item item, Inventory invA, Inventory invB)
     {
-        for(int i=0; i< allInventorySlots.Count; i++)
+        AddItem(item, invB);
+        RemoveItem(item, invA);
+    }
+
+    internal void DragInventoryIcon()
+    {
+        for(int i=0; i < allInventorySlots.Count; i++)
         {
             Slot curSlot = allInventorySlots[i];
 
@@ -190,7 +167,7 @@ public class Inventory : MonoBehaviour
             {
                 _currentDragSlotIndex = i;
                 _currentDraggedItem = curSlot.getItem();
-                dragIconImage.sprite = _currentDraggedItem.icon;
+                dragIconImage.sprite = _currentDraggedItem.Icon;
                 dragIconImage.color = new Color(1, 1, 1, 1);
 
                 curSlot.SetItem(null);
@@ -198,7 +175,7 @@ public class Inventory : MonoBehaviour
         }
     }
 
-    private void DropInventoryIcon()
+    internal void DropInventoryIcon()
     {
         dragIconImage.sprite = null;
         dragIconImage.color = new Color(1, 1, 1, 0);
@@ -234,7 +211,7 @@ public class Inventory : MonoBehaviour
         ResetDragVariables();
     }
 
-    private void ResetDragVariables()
+    internal void ResetDragVariables()
     {
         _currentDraggedItem = null;
         _currentDragSlotIndex = -1;

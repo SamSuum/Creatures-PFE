@@ -65,9 +65,9 @@ namespace PLAYER
         {
             Vector3 inputDirection = new Vector3(sm.input.move.x, 0.0f, sm.input.move.y).normalized;
 
-            sm._targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + sm._mainCamera.transform.eulerAngles.y;
+            sm.cameraHandler._targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg + sm.cameraHandler._mainCamera.transform.eulerAngles.y;
 
-            Vector3 targetDirection = Quaternion.Euler(0.0f, sm._targetRotation, 0.0f) * Vector3.forward;
+            Vector3 targetDirection = Quaternion.Euler(0.0f, sm.cameraHandler._targetRotation, 0.0f) * Vector3.forward;
             return targetDirection;
         }
         private void HandleRotation()
@@ -75,7 +75,7 @@ namespace PLAYER
 
             if (sm.input.move != Vector2.zero)
             {
-                float rotation = Mathf.SmoothDampAngle(sm.transform.eulerAngles.y, sm._targetRotation, ref sm._rotationVelocity, sm.RotationSmoothTime);
+                float rotation = Mathf.SmoothDampAngle(sm.transform.eulerAngles.y, sm.cameraHandler._targetRotation, ref sm.cameraHandler._rotationVelocity, sm.cameraHandler.RotationSmoothTime);
                 sm.transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
             }
         }
@@ -101,7 +101,6 @@ namespace PLAYER
                     if (sm.input.interact)
                     {
                         sm._interactable.Interact(sm);
-                        //sm.input.interact = false;
                     }
                     sm.mimickable = sm._colliders[0].GetComponentInParent<IMimickable>();
                 } 
@@ -110,7 +109,6 @@ namespace PLAYER
             {
                 if (sm._interactable == null) sm._interactable = null;
                 if (sm._interactionPromptUI.isDisplayed) sm._interactionPromptUI.Close();
-                sm.input.interact = false;
             }
         }
 

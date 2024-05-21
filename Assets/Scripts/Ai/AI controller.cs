@@ -16,7 +16,7 @@ public class AIController : AIStateMachine
 {
     public Patrol patrolState;
     public Pursuit pursuitState;
-    public LookOut lookOutState;
+    public Search lookOutState;
     public Idle idleState;
     public Flee fleeState;
     public Attack attackState;
@@ -44,7 +44,7 @@ public class AIController : AIStateMachine
     {
         patrolState = new Patrol(this);
         pursuitState = new Pursuit(this);
-        lookOutState = new LookOut(this);
+        lookOutState = new Search(this);
         idleState = new Idle(this);
         fleeState = new Flee();
         attackState = new Attack(this);

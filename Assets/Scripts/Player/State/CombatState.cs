@@ -120,8 +120,8 @@ namespace PLAYER
             float Verticalinput = sm.input.move.y;
             float HorizontalInput = sm.input.move.x;
 
-            Vector3 forward = sm._mainCamera.transform.forward;
-            Vector3 right = sm._mainCamera.transform.right;
+            Vector3 forward = sm.cameraHandler._mainCamera.transform.forward;
+            Vector3 right = sm.cameraHandler._mainCamera.transform.right;
             forward.y = 0;
             right.y = 0;
             forward = forward.normalized;
@@ -131,9 +131,9 @@ namespace PLAYER
             sm.direction = Verticalinput * forward + HorizontalInput * right;
 
             //Handle player rotation
-            sm._targetRotation = sm._mainCamera.transform.eulerAngles.y;
+            sm.cameraHandler._targetRotation = sm.cameraHandler._mainCamera.transform.eulerAngles.y;
 
-            float rotation = Mathf.SmoothDampAngle(sm.transform.eulerAngles.y, sm._targetRotation, ref sm._rotationVelocity, sm.RotationSmoothTime);
+            float rotation = Mathf.SmoothDampAngle(sm.transform.eulerAngles.y, sm.cameraHandler._targetRotation, ref sm.cameraHandler._rotationVelocity, sm.cameraHandler.RotationSmoothTime);
             sm.transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
 
             sm._animator.SetFloat("VelocityZ", Verticalinput);

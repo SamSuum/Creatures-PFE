@@ -1,41 +1,64 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
-
-public class Item : MonoBehaviour, IInteractable
+[CreateAssetMenu(menuName = "Items/Item")]
+public class Item : ScriptableObject
 {
-    public new string name = "new item";
-    public Sprite icon;
-    public string description = "...";
-    public int currentQuantity = 1;
-    public int maxQuantitity = 10;
-    [SerializeField] private string _interactionPrompt = "Take";
-
-    [Header("item use")]
-    public UnityEvent myEvent;
-    public bool removeOneOnUse;
-
-
-    public string InteractionPrompt => _interactionPrompt;
-
-    public bool Interact(Actor player)
+    [SerializeField] string id;
+    public string ID { get { return id; } }
+    public string ItemName;
+    public Sprite Icon;
+    [SerializeField] int amount = 1;
+    public int Amount 
     {
-        player.gameObject.GetComponent<Inventory>().AddItemToInventory(this);
-
-        return true;
-    }
-
-   
-    public void UseItem()
-    {
-        if(myEvent.GetPersistentEventCount()>0)
+        get 
         {
-            myEvent.Invoke();
-
-            if (removeOneOnUse)
-                currentQuantity--;
+            return amount;
+        }  
+        set
+        {
+            amount = value;
         }
     }
+
+    [Range(1, 999)]
+    public int MaximumStacks = 1;
+    public GameObject prefab;
+
+    protected static readonly StringBuilder sb = new StringBuilder();
+
+#if UNITY_EDITOR
+    protected virtual void OnValidate()
+    {
+        string path = AssetDatabase.GetAssetPath(this);
+        id = AssetDatabase.AssetPathToGUID(path);
+    }
+#endif
+
+    public virtual Item GetCopy()
+    {
+        return this;
+    }
+
+    public virtual void Destroy()
+    {
+
+    }
+
+    public virtual string GetItemType()
+    {
+        return "";
+    }
+
+    public virtual string GetDescription()
+    {
+        return "";
+    }
+
+    
 }

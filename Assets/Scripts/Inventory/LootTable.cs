@@ -81,7 +81,7 @@ public class LootTable :ScriptableObject
 
             if(itemComponent !=null)
             {
-                itemComponent.currentQuantity = spawnCount;
+                itemComponent.Amount = spawnCount;
             }
 
             slot.SetItem(itemComponent);

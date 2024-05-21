@@ -8,7 +8,12 @@ public class UIMenuManager : MonoBehaviour
     [SerializeField] GameObject pauseUI;
     [SerializeField] GameObject HUD;
     [SerializeField] GameObject gameOverUI;
-   
+
+    [SerializeField] GameObject Main;
+    [SerializeField] GameObject Settings;
+    [SerializeField] GameObject Audio;
+    [SerializeField] GameObject Help;
+
     [SerializeField] Actor player;
     [SerializeField] PlayerInputs input;
 
@@ -17,27 +22,33 @@ public class UIMenuManager : MonoBehaviour
 
     private void Start()
     {       
-        pauseUI.SetActive(false);
-        gameOverUI.SetActive(false);
-
-        Cursor.visible = false;
-        Time.timeScale = 1;
-        Cursor.lockState = CursorLockMode.Locked;
+        if(pauseUI) pauseUI.SetActive(false);
+        if (gameOverUI) gameOverUI.SetActive(false);
+        if(player)
+        {
+            Cursor.visible = false;
+            Time.timeScale = 1;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
     }
     // Update is called once per frame
     void Update()
     {
-        if (player.dead)
+        if(player != null && input != null)
         {
-            ToggleMenu(true, gameOverUI);
-            Time.timeScale =.5f;
-        }
-        else if (input.pause)
-        {
-            ToggleMenu(!pauseUI.activeSelf, pauseUI);                
-        }
+            if (player.dead)
+            {
+                ToggleMenu(true, gameOverUI);
+                Time.timeScale = .5f;
+            }
+            else if (input.pause)
+            {
+                ToggleMenu(!pauseUI.activeSelf, pauseUI);
+            }
 
-        if(input.pause) input.pause = false;
+            if (input.pause) input.pause = false;
+        }
+        
     }
 
     public void ToggleMenu(bool enabled, GameObject UI)
@@ -55,7 +66,29 @@ public class UIMenuManager : MonoBehaviour
         ToggleMenu(false, pauseUI);
     }
 
-  
+    public void OpenSettings()
+    {
+        Main.SetActive(false);
+        Settings.SetActive(true);
+    }
+    public void OpenHelp()
+    {
+        Main.SetActive(false);
+        Help.SetActive(true);
+    }
 
-   
+    public void OpenAudioSettings()
+    {
+        Audio.SetActive(true);
+    }
+
+    public void Back()
+    {
+        Main.SetActive(true);
+        Settings.SetActive(false);
+        Help.SetActive(false);
+    }
+
+
+
 }

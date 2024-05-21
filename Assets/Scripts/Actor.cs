@@ -142,7 +142,12 @@ public abstract class Actor : MonoBehaviour
             actor.damageCooldown = 0;
     }
 
-    
+    public void Heal(int amount)
+    {
+        HP.HealUnit(amount);
+        stamina.MaxStamina = HP.Health;
+        healthBar.SetHealth(HP.Health);
+    }
 
     #endregion
 
