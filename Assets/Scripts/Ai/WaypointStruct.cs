@@ -23,9 +23,9 @@ public struct WaypointStruct
     }
     public void MoveToWaypoint(Transform t,float speed, Transform currentwaypoint)
     {
-        Vector3 direction = currentwaypoint.position - t.transform.position;
-        t.Translate(direction.normalized * speed * Time.deltaTime);
+        t.position = Vector3.MoveTowards(t.position, currentwaypoint.position, speed * Time.deltaTime);
     }
+
     public void RigidBodyMoveToWaypoint(Rigidbody rb,float speed,Transform currentwaypoint)
     {        
         Vector3 direction =  currentwaypoint.position - rb.transform.position ;
