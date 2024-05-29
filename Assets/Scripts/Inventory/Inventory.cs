@@ -53,7 +53,7 @@ public class Inventory : MonoBehaviour
             }
             else if (itemSlot.getItem().ID == item.ID)
             {
-                freeSpaces += item.MaximumStacks - itemSlot.getItem().Amount;
+                freeSpaces += item.MaximumStacks - itemSlot.slotAmount;
             }
         }
         return freeSpaces >= amount;
@@ -61,21 +61,27 @@ public class Inventory : MonoBehaviour
 
     public bool AddItem(Item item, Inventory inv)
     {
+        
         for (int i = 0; i < inv.InventorySlots.Count; i++)
         {
             if (inv.CanAddItem(item))
             {
-                //stack items
-                if (inv.InventorySlots[i].getItem() != null && inv.InventorySlots[i].getItem().ID == item.ID)
-                {
-                    inv.InventorySlots[i].getItem().Amount += item.Amount;
+               //stack items
+               if (inv.InventorySlots[i].hasItem() && inv.InventorySlots[i].getItem().ID == item.ID)
+               {
+                    inv.InventorySlots[i].slotAmount += item.Amount;
+                    inv.InventorySlots[i].UpdateData();
+               }
+               else if(inv.InventorySlots[i].getItem() == null)
+               {
+                    inv.InventorySlots[i].SetItem(item);
+                    inv.InventorySlots[i].slotAmount ++;
                     inv.InventorySlots[i].UpdateData();
                 }
-                else
-                {
-                    inv.InventorySlots[i].SetItem(item);
-                }
-               
+               else if(inv.InventorySlots[i].hasItem() && inv.InventorySlots[i].getItem().ID != item.ID)
+               {
+                    continue;
+               }
 
                 return true;
             }
@@ -90,7 +96,10 @@ public class Inventory : MonoBehaviour
         {
             if (inv.InventorySlots[i].getItem() == item)
             {
-                inv.InventorySlots[i].getItem().Amount--;
+                if (inv.InventorySlots[i].slotAmount > 0)
+                    inv.InventorySlots[i].slotAmount--;
+                else
+                    inv.InventorySlots[i].SetItem(null); ;
                 return true;
             }
         }
@@ -105,11 +114,10 @@ public class Inventory : MonoBehaviour
 
             if (curSlot.hovered && curSlot.hasItem())
             {
-                UseItem(curSlot.getItem());
-
-                if(curSlot.getItem().Amount !=0)
+                if(curSlot.getItem().Amount-1 > 0)
                 {
-                    curSlot.getItem().Amount--;
+                    UseItem(curSlot.getItem());
+                    curSlot.slotAmount--;
                     curSlot.UpdateData();
                 }
                 else
@@ -126,10 +134,10 @@ public class Inventory : MonoBehaviour
        switch(item.GetItemType())
        {
             case "Healing":
-                player.Heal(5);
+                player.Heal(item.effectAmount);
                 break;
             case "Psy":
-                player.GainPsy(5);
+                player.GainPsy(item.effectAmount);
                 break;
        }
     }
@@ -143,10 +151,15 @@ public class Inventory : MonoBehaviour
             if (curSlot.hovered && curSlot.hasItem())
             {
                 Instantiate(curSlot.getItem().prefab, dropLocation.position, dropLocation.rotation);
-                curSlot.getItem().Amount--;
-                curSlot.UpdateData();
-                if (curSlot.getItem().Amount == 0)
+
+                if (curSlot.slotAmount > 0)
+                {
+                    curSlot.slotAmount--;
+                    curSlot.UpdateData();
+                }
+                else 
                     curSlot.SetItem(null);
+
                 break;
             }
         }

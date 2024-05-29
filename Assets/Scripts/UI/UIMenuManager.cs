@@ -18,6 +18,7 @@ public class UIMenuManager : MonoBehaviour
     [SerializeField] PlayerInputs input;
 
 
+
     [SerializeField] private Inventory _playerInventory;
 
     private void Start()
@@ -66,7 +67,7 @@ public class UIMenuManager : MonoBehaviour
         ToggleMenu(false, pauseUI);
     }
 
-    public void OpenSettings()
+    public void OpenSettings(GameObject Settings)
     {
         Main.SetActive(false);
         Settings.SetActive(true);
@@ -77,12 +78,20 @@ public class UIMenuManager : MonoBehaviour
         Help.SetActive(true);
     }
 
+    public void Open(GameObject Settings)
+    {
+        Settings.SetActive(true);
+    }
+    public void Close(GameObject Settings)
+    {
+        Settings.SetActive(false);
+    }
     public void OpenAudioSettings()
     {
         Audio.SetActive(true);
     }
 
-    public void Back()
+    public void Back(GameObject Settings)
     {
         Main.SetActive(true);
         Settings.SetActive(false);

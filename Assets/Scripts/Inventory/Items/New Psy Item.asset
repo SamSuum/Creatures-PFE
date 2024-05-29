@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: New Psy Item
   m_EditorClassIdentifier: 
   id: c9538c36c38611d4aab631e97e41ec58
-  ItemName: Psy potion
+  ItemName: potion
   Icon: {fileID: 21300000, guid: b0b7fe68babf8ce40beb99ffb3b63b88, type: 3}
   amount: 1
+  effectAmount: 5
   MaximumStacks: 10
   prefab: {fileID: 1700825926764911370, guid: d4c2cd37871a240449b803e881955d1f, type: 3}
-  effectAmount: 5

@@ -10,8 +10,6 @@ using UnityEngine.Events;
 public class HealingItem : Item
 {
 
-    public int effectAmount;
-
 #if UNITY_EDITOR
     protected override void OnValidate()
     {

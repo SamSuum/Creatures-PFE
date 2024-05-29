@@ -34,12 +34,13 @@ public class Attack : IAIBaseState
         if (_timer > 1.0f)
         {
             _ai.attack2 = true;
-
+            _ai._weaponL.tag = "Dmg";
             //Reset Timer
             _timer = 0;
         }
         else
         {
+            _ai._weaponL.tag = "none";
             _ai.attack2 = false;
         }
 

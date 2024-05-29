@@ -16,10 +16,20 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     [SerializeField] private Image _thisSlotImage;
     public TMP_Text thisSlotQuantityText;
 
+    [SerializeField] private GameObject _descriptionPanel;
+    [SerializeField] private TMP_Text _description;
+    [SerializeField] private TMP_Text _name;
+
+
+    public int slotAmount;
+
     public void InitiliazeSlot()
     {
         _thisSlotImage = gameObject.GetComponent<Image>();
-        thisSlotQuantityText = transform.GetChild(0).GetComponent<TMP_Text>();
+        thisSlotQuantityText = transform.GetChild(1).GetComponent<TMP_Text>();
+
+        _descriptionPanel.SetActive(false);
+
         _thisSlotImage.sprite = null;
         _thisSlotImage.color = _transparent;
         SetItem(null);
@@ -32,13 +42,21 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
         if(item!=null)
         {
             _thisSlotImage.sprite = _heldItem.Icon;
+            slotAmount = _heldItem.Amount;
             _thisSlotImage.color = _opaque;
+
+            _name.text = _heldItem.ItemName;
+            _description.text = _heldItem.GetDescription();
+
             UpdateData();
         }
         else
         {
+            slotAmount = 0;
             _thisSlotImage.sprite = null;
             _thisSlotImage.color = _transparent;
+            _name.text = "";
+            _description.text = "";
             UpdateData();
         }
     }
@@ -46,7 +64,7 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         if(_heldItem != null)
         {
-            thisSlotQuantityText.text =_heldItem.Amount.ToString();
+            thisSlotQuantityText.text =slotAmount.ToString();
         }
         else
         {
@@ -65,11 +83,13 @@ public class Slot : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     public void OnPointerEnter(PointerEventData eventData)
     {
         hovered = true;
+        if (hasItem()) _descriptionPanel.SetActive(true);
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
         hovered = false;
+        _descriptionPanel.SetActive(false);
     }
 
    

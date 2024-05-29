@@ -23,7 +23,7 @@ Material:
   m_Name: Mat_orange
   m_Shader: {fileID: 4800000, guid: 933f24cde1e3f6a41818f56d729421ab, type: 3}
   m_Parent: {fileID: 2100000, guid: ee48570d6b06bf94791dfc79b6f36158, type: 2}
-  m_ModifiedSerializedProperties: 2
+  m_ModifiedSerializedProperties: 18
   m_ValidKeywords:
   - _HALFTONESHAPE_DOT
   - _SPECULARHIGHLIGHTS_OFF
@@ -34,7 +34,7 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
+  m_CustomRenderQueue: 2050
   stringTagMap:
     RenderType: Opaque
   disabledShaderPasses: []

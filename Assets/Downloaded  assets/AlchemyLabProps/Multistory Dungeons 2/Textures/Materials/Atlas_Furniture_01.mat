@@ -27,7 +27,6 @@ Material:
   m_ValidKeywords:
   - _HALFTONESHAPE_DOT
   - _NORMALMAP
-  - _OUTLINE
   m_InvalidKeywords:
   - _METALLICSPECGLOSSMAP
   - _SPECULAR_SETUP
@@ -342,7 +341,7 @@ Material:
     - _NormalMapSpace: 0
     - _NormalScale: 1
     - _OcclusionStrength: 1
-    - _OutlineEnabled: 1
+    - _OutlineEnabled: 0
     - _OutlineMode: 0
     - _OutlineWidth: 3
     - _OverrideShadowColor: 0

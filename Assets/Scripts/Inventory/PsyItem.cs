@@ -9,7 +9,6 @@ using UnityEngine.Events;
 [CreateAssetMenu(menuName = "Items/Psy_Item")]
 public class PsyItem : Item
 {
-    public int effectAmount;
 
 #if UNITY_EDITOR
     protected override void OnValidate()

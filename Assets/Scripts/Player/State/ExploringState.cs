@@ -89,7 +89,8 @@ namespace PLAYER
             {
                 //interactions
 
-                sm._interactable = sm._colliders[0].GetComponentInParent<IInteractable>();             
+                sm._interactable = sm._colliders[0].GetComponentInParent<IInteractable>();
+                sm.mimickable = sm._colliders[0].GetComponentInParent<IMimickable>();
 
                 if (sm._interactable != null)
                 {
@@ -101,8 +102,7 @@ namespace PLAYER
                     if (sm.input.interact)
                     {
                         sm._interactable.Interact(sm);
-                    }
-                    sm.mimickable = sm._colliders[0].GetComponentInParent<IMimickable>();
+                    }                  
                 } 
             }
             else

@@ -6,7 +6,6 @@ public class Hitbox : MonoBehaviour
 {
     [SerializeField] Actor actor;
     public int id;
-    public int dmg = 5;
     [SerializeField] float _velocityY;
 
     //debug
@@ -27,11 +26,19 @@ public class Hitbox : MonoBehaviour
 
         if (collision.collider.gameObject.CompareTag("Dmg") && collision.collider.gameObject.GetComponent<WeaponID>().id != id)
         {           
-            GameEvents.current.HitTriggerEnter(actor,id, dmg);
+            GameEvents.current.HitTriggerEnter(actor,id, collision.collider.gameObject.GetComponent<WeaponID>().dmg);
             GameEvents.current.HitTriggerExit(actor, id);
         }
         
     }
-    
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Dmg") && other.gameObject.GetComponent<WeaponID>().id != id)
+        {
+            GameEvents.current.HitTriggerEnter(actor, id, other.gameObject.GetComponent<WeaponID>().dmg);
+            GameEvents.current.HitTriggerExit(actor, id);
+        }
+
+    }
 
 }

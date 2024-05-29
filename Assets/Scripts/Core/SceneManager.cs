@@ -11,6 +11,7 @@ public class Scene_Manager : MonoBehaviour
     }
     public void ExitToMainMenu()
     {
+        Time.timeScale = 0;
         SceneManager.LoadScene(0);
     }
 
@@ -18,5 +19,11 @@ public class Scene_Manager : MonoBehaviour
     {
         Time.timeScale = 1;
         SceneManager.LoadScene(1);
+    }
+
+    public void LoadScene (int index)
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(index);
     }
 }

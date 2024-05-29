@@ -14,6 +14,8 @@ public class Item : ScriptableObject
     public string ItemName;
     public Sprite Icon;
     [SerializeField] int amount = 1;
+    
+    public int effectAmount;
     public int Amount 
     {
         get 
@@ -39,7 +41,7 @@ public class Item : ScriptableObject
         id = AssetDatabase.AssetPathToGUID(path);
     }
 #endif
-
+   
     public virtual Item GetCopy()
     {
         return this;

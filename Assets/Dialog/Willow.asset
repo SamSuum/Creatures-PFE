@@ -32,7 +32,7 @@ MonoBehaviour:
     AvatarType: 0
     TextType:
     - languageEnum: 0
-      LanguageGenericType: Follow me ...
+      LanguageGenericType: You must escape now ...
     - languageEnum: 1
       LanguageGenericType: 
     Duration: 10

@@ -40,6 +40,8 @@ public class AIController : AIStateMachine
     [SerializeField] internal GameObject _weaponL;
     [SerializeField]internal GameObject _weaponR;
 
+    public int health;
+
     private void Awake()
     {
         patrolState = new Patrol(this);
@@ -60,7 +62,7 @@ public class AIController : AIStateMachine
         base.OnStart();
         healthBar.gameObject.SetActive(false);
 
-        HP = new GenericHP(100, 100);
+        HP = new GenericHP(health, health);
         stamina = null;
         GameEvents.current.onHitTriggerEnter += OnHitTaken;
         GameEvents.current.onHitTriggerExit += OnHitRecover;

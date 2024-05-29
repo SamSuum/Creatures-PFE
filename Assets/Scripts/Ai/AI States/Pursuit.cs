@@ -16,16 +16,18 @@ public class Pursuit : IAIBaseState
     public void Enter() { }
     public void Exit() { }
     public void UpdateLogic() 
-    {
-       
+    {       
         float distance = (_ai.dest - _ai.agent.transform.position).magnitude;
 
-       if( _ai.alertStage == AlertStage.Intrigued)
-       {
-            _ai.ChangeState(_ai.lookOutState);
-       }
-        if( distance <= 0.1)
+        Debug.Log(distance);
+
+        if ( _ai.alertStage == AlertStage.Intrigued)
         {
+            _ai.ChangeState(_ai.lookOutState);
+        }
+
+        if ( distance <= _ai.agent.stoppingDistance + _ai.offset.magnitude)
+        {            
             _ai.ChangeState(_ai.attackState);
         }
     }

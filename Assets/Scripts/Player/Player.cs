@@ -25,9 +25,6 @@ namespace PLAYER
         [SerializeField] private int _poolSize = 1;
         [SerializeField] private int _poolMaxSize = 2;
 
-        [SerializeField] private List<GameObject> _Shapes = new List<GameObject>();
-        [SerializeField] private GameObject _ShapeShiftingUI ; //drop down menu near health bar holding shapeshifting key
-
         public bool hasMimicked = false;
         public bool canMimick = false;
         public bool canReset = false;
@@ -173,7 +170,7 @@ namespace PLAYER
         private void HandleShapeShift()
         {            
 
-            if (mimickable != null)
+            if (mimickable != null && _numFound>0) 
             {
                 if (!_mimicPromptUI.isDisplayed)
                 {
@@ -181,7 +178,7 @@ namespace PLAYER
                 }
                 canMimick = true;
             }
-            else
+            else if (_numFound == 0)
             {
                 if (_mimicPromptUI.isDisplayed) _mimicPromptUI.Close();
                 canMimick = false;
@@ -226,19 +223,12 @@ namespace PLAYER
             ClearPrev(_shapeInstance);
             InitializePool();
 
-            /// add to list if space available 
-            /// else overwrite last element 
-            /// or open menu to choose an element to overwrite (default cannot be overwritten)
+           
 
             canMimick = false;
         }
 
-        private void InitializeShapeList()
-        {
-           //put default in index zero
-
-           // add (maxsize) empty elements 
-        }
+      
 
 
 
@@ -263,10 +253,6 @@ namespace PLAYER
 
         private void ShapeShift()
         {
-            /// deactivate or destroy current shape
-            /// instantiate or activate new shape
-            /// unless it's null
-
 
             this.tag = "Bot";
             ChangeShape();

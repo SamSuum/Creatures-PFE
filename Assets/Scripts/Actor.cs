@@ -33,7 +33,6 @@ public abstract class Actor : MonoBehaviour
     [HideInInspector] public bool dead;
     [HideInInspector] public bool combat;
     public bool hit;
-    [HideInInspector] public bool inElevator;
 
 
     public float damageCooldown = 0;

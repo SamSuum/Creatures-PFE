@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class Chest : Inventory, IInteractable
 {
-    
+    [SerializeField] Animator anim;
 
     [Header("Interaction")]
     [SerializeField] private string _prompt;
@@ -16,6 +16,7 @@ public class Chest : Inventory, IInteractable
     [Header("Chest inventory")]
     [SerializeField] private Inventory _playerInv;
     [SerializeField] private List<Slot> _chestSlots = new List<Slot>();
+    [SerializeField] private List<Item> items = new List<Item>();
 
     [Header("Loot tables")]
     [SerializeField] private bool randomLoot;
@@ -23,10 +24,7 @@ public class Chest : Inventory, IInteractable
 
     
     private void Start()
-    {
-        ToggleInventory(false,this);
-        InventorySlots.AddRange(_chestSlots);
-        allInventorySlots.AddRange(InventorySlots);
+    {     
 
         foreach (Slot uiSlot in _chestSlots)
         {
@@ -41,8 +39,17 @@ public class Chest : Inventory, IInteractable
             lootTable.InitiliazeLootTable();
             lootTable.SpawnLoot(_chestSlots);
         }
+        else
+        {
+            for (int i = 0; i < items.Count; i++)
+            {
+                _chestSlots[i].SetItem(items[i]);                
+            }
+        }
 
-
+        ToggleInventory(false, this);
+        InventorySlots.AddRange(_chestSlots);
+        allInventorySlots.AddRange(InventorySlots);
     }
     private void Update()
     {
@@ -75,6 +82,9 @@ public class Chest : Inventory, IInteractable
     public bool Interact(Actor player)
     {
         ToggleInventory(!_inventoryUI.activeSelf,this);
+        Time.timeScale = 1;
+        anim.SetBool("Open", _inventoryUI.activeSelf);
+
         return true;
     }
 

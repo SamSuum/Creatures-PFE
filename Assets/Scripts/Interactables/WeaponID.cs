@@ -5,4 +5,5 @@ using UnityEngine;
 public class WeaponID : MonoBehaviour
 {
     public int id = 1;
+    public int dmg = 100;
 }
